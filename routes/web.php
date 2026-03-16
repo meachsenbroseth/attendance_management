@@ -11,9 +11,11 @@ Route::inertia('/', 'Welcome', [
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'Dashboard')->name('dashboard');
 
-    //users
+    // users
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
-    Route::get('/users/create' ,[UserController::class , 'create'])->name('users.create');
+    Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
+    Route::post('/users', [UserController::class, 'store'])->name('users.store');
+    Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
 });
 
 require __DIR__.'/settings.php';

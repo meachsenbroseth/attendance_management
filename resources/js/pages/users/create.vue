@@ -2,45 +2,36 @@
 import { Head, Link, useForm } from '@inertiajs/vue3'
 import AppLayout from '@/layouts/AppLayout.vue'
 import type { BreadcrumbItem } from '@/types'
-import { index as usersIndex } from '@/routes/users'
+import { index as usersIndex, store as usersStore } from '@/routes/users'
 
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Button from '@/components/ui/button/Button.vue'
 import Label from '@/components/ui/label/Label.vue'
 import Input from '@/components/ui/input/Input.vue'
-import Checkbox from '@/components/ui/checkbox/Checkbox.vue'
 import InputError from '@/components/InputError.vue'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 const breadcrumbs: BreadcrumbItem[] = [
   { title: 'Users', href: usersIndex() },
 ]
 
-// Example roles (replace with props from backend)
-const roles = ['admin', 'teacher', 'student']
+const roles = ['admin', 'teacher', 'student'] as const
 
 const form = useForm({
   name: '',
   email: '',
   password: '',
-  roles: [] as string[],
+  role: 'teacher' as (typeof roles)[number],
 })
 
-type CheckedState = boolean | 'indeterminate'
-
-const toggleRole = (role: string, checked: CheckedState): void => {
-  if (checked === true) {
-    if (!form.roles.includes(role)) {
-      form.roles.push(role)
-    }
-
-    return
-  }
-
-  form.roles = form.roles.filter((existingRole) => existingRole !== role)
-}
-
 const submit = () => {
-  form.post('/users')
+  form.post(usersStore.url())
 }
 </script>
 
@@ -100,24 +91,22 @@ const submit = () => {
               <InputError :message="form.errors.password" />
             </div>
 
-            <!-- Roles -->
+            <!-- Role -->
             <div class="mt-6">
-              <Label>Select Role</Label>
+              <Label for="role">Role</Label>
 
-              <div class="my-4 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
-                <div
-                  v-for="role in roles"
-                  :key="role"
-                  class="flex items-center gap-3"
-                >
-                  <Checkbox
-                    :id="role"
-                    :checked="form.roles.includes(role)"
-                    @update:checked="toggleRole(role, $event)"
-                  />
-                  <Label :for="role">{{ role }}</Label>
-                </div>
-              </div>
+              <Select v-model="form.role">
+                <SelectTrigger id="role" class="w-full" :aria-invalid="!!form.errors.role">
+                  <SelectValue placeholder="Select role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem v-for="role in roles" :key="role" :value="role">
+                    {{ role }}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+
+              <InputError :message="form.errors.role" />
             </div>
 
             <!-- Submit -->

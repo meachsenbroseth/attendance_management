@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 import { create as usersCreate, index as usersIndex } from '@/routes/users';
@@ -13,13 +13,36 @@ import {
   TableRow
 } from '@/components/ui/table';
 import Button from '@/components/ui/button/Button.vue';
-
+import { destroy } from '@/actions/App/Http/Controllers/UserController';
 const breadcrumbs: BreadcrumbItem[] = [
   {
     title: 'Users',
     href: usersIndex(),
   },
 ];
+
+interface User {
+  id: number
+  name: string
+  email: string
+  role: string
+}
+
+interface Paginated<T> {
+  data: T[]
+}
+
+const deleteUser = (id: number)=>{
+if (confirm('Are you sure you want to delete this user?')) {
+    // Wayfinder actions return an object with { url, method }
+    router.visit(destroy(id)); 
+  }
+}
+
+defineProps<{
+  users: Paginated<User>
+}>()
+
 </script>
 
 <template>
@@ -48,16 +71,16 @@ const breadcrumbs: BreadcrumbItem[] = [
             </TableRow>
           </TableHeader>
           <TableBody>
-            <TableRow>
-              <TableCell>1</TableCell>
-              <TableCell>tom</TableCell>
-              <TableCell>tom@gmail.com</TableCell>
-              <TableCell>teacher</TableCell>
+            <TableRow v-for="user in users.data" :key="user.id">
+              <TableCell>{{ user.id }}</TableCell>
+              <TableCell>{{ user.name }}</TableCell>
+              <TableCell>{{ user.email }}</TableCell>
+              <TableCell>{{ user.role }}</TableCell>
+
               <TableCell class="text-right">
                 <div class="flex justify-end gap-2">
                   <Button variant="outline" size="sm">Edit</Button>
-
-                  <Button variant="destructive" size="sm">
+                  <Button variant="destructive" size="sm" @click="deleteUser(user.id)">
                     Delete
                   </Button>
                 </div>
