@@ -2,7 +2,8 @@
 import { Head, Link } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
-// import {} from 
+import { create as usersCreate, index as usersIndex } from '@/routes/users';
+
 import {
   Table,
   TableBody,
@@ -16,7 +17,7 @@ import Button from '@/components/ui/button/Button.vue';
 const breadcrumbs: BreadcrumbItem[] = [
   {
     title: 'Users',
-    href: '/users',
+    href: usersIndex(),
   },
 ];
 </script>
@@ -31,13 +32,13 @@ const breadcrumbs: BreadcrumbItem[] = [
         <h1 class="text-2xl font-bold">Users</h1>
 
         <Button as-child>
-          <Link :href="route('users.create')">Add User</Link>
+          <Link :href="usersCreate()">Add User</Link>
         </Button>
       </div>
 
-      <div class="border rounded-md border-zinc-800">
+      <div class="border rounded-md">
         <Table class="w-full">
-          <TableHeader>
+          <TableHeader class=" bg-secondary">
             <TableRow>
               <TableHead>Id</TableHead>
               <TableHead>Name</TableHead>
