@@ -2,7 +2,7 @@
 import { Head, Link, router } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
-import { create as usersCreate, index as usersIndex } from '@/routes/users';
+import { edit, create as usersCreate, index as usersIndex } from '@/routes/users';
 
 import {
   Table,
@@ -28,15 +28,30 @@ interface User {
   role: string
 }
 
+interface PaginationLink {
+  url: string | null
+  label: string
+  active: boolean
+}
+
+interface Paginated<T> {
+  data: T[]
+  links: PaginationLink[]
+}
+
 interface Paginated<T> {
   data: T[]
 }
 
-const deleteUser = (id: number)=>{
-if (confirm('Are you sure you want to delete this user?')) {
+const deleteUser = (id: number) => {
+  if (confirm('Are you sure you want to delete this user?')) {
     // Wayfinder actions return an object with { url, method }
-    router.visit(destroy(id)); 
+    router.visit(destroy(id));
   }
+}
+
+const editUser = (id: number) => {
+  router.visit(edit(id));
 }
 
 defineProps<{
@@ -58,7 +73,6 @@ defineProps<{
           <Link :href="usersCreate()">Add User</Link>
         </Button>
       </div>
-
       <div class="border rounded-md">
         <Table class="w-full">
           <TableHeader class=" bg-secondary">
@@ -79,7 +93,7 @@ defineProps<{
 
               <TableCell class="text-right">
                 <div class="flex justify-end gap-2">
-                  <Button variant="outline" size="sm">Edit</Button>
+                  <Button variant="outline" size="sm" @click="editUser(user.id)">Edit</Button>
                   <Button variant="destructive" size="sm" @click="deleteUser(user.id)">
                     Delete
                   </Button>
@@ -88,6 +102,15 @@ defineProps<{
             </TableRow>
           </TableBody>
         </Table>
+      </div>
+      <div class="mt-4 flex justify-end gap-1">
+        <Link v-for="(link, i) in users.links" :key="i" :href="link.url || ''" v-html="link.label"
+          class="px-3 py-1 border rounded text-sm" :class="[
+            link.active
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-background hover:bg-muted',
+            !link.url && 'opacity-50 pointer-events-none'
+          ]" />
       </div>
     </div>
   </AppLayout>

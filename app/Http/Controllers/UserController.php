@@ -21,7 +21,7 @@ class UserController extends Controller
         $users = User::query()
             ->select(['id', 'name', 'email', 'role'])
             ->orderBy('id')
-            ->paginate(15);
+            ->paginate(10);
 
         return Inertia::render('users/index', [
             'users' => $users,
@@ -61,7 +61,11 @@ class UserController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $user = User::find($id);
+
+        return Inertia::render('users/edit', [
+            'user' => $user,
+        ]);
     }
 
     /**
@@ -69,7 +73,22 @@ class UserController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $user = User::findOrFail($id);
+
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,'.$user->id,
+            'password' => 'nullable|min:6',
+            'role' => 'required|in:admin,teacher,student',
+        ]);
+
+        if (empty($data['password'])) {
+            unset($data['password']);
+        }
+
+        $user->update($data);
+
+        return to_route('users.index')->withMessage('User updated.');
     }
 
     /**
