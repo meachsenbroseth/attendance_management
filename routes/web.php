@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
@@ -18,6 +19,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/users/{id}', [UserController::class, 'edit'])->name('users.edit');
     Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
     Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
+
+    // attendance
+    Route::get('/attendances', [AttendanceController::class, 'index'])->name('attendances.index');
+    Route::get('/attendances/create', [AttendanceController::class, 'create'])->name('attendances.create');
+    Route::post('/attendances', [AttendanceController::class, 'store'])->name('attendances.store');
 });
 
 require __DIR__.'/settings.php';
