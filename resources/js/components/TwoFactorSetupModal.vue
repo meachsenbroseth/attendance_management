@@ -93,13 +93,14 @@ const resetModalState = () => {
     code.value = '';
 };
 
-watch(
-    () => isOpen.value,
-    async (isOpen) => {
-        if (!isOpen) {
-            resetModalState();
-            return;
-        }
+	watch(
+	    () => isOpen.value,
+	    async (isOpen) => {
+	        if (!isOpen) {
+	            resetModalState();
+
+	            return;
+	        }
 
         if (!qrCodeSvg.value) {
             await fetchSetupData();

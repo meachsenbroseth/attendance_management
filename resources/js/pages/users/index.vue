@@ -1,25 +1,25 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
-import AppLayout from '@/layouts/AppLayout.vue';
-import type { BreadcrumbItem } from '@/types';
-import { edit, create as usersCreate, index as usersIndex } from '@/routes/users';
+	import { Head, Link, router } from '@inertiajs/vue3';
+	import { destroy } from '@/actions/App/Http/Controllers/UserController';
+	import Button from '@/components/ui/button/Button.vue';
+	import {
+	    Table,
+	    TableBody,
+	    TableCell,
+	    TableHead,
+	    TableHeader,
+	    TableRow,
+	} from '@/components/ui/table';
+	import AppLayout from '@/layouts/AppLayout.vue';
+	import { create as usersCreate, edit, index as usersIndex } from '@/routes/users';
+	import type { BreadcrumbItem } from '@/types';
 
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow
-} from '@/components/ui/table';
-import Button from '@/components/ui/button/Button.vue';
-import { destroy } from '@/actions/App/Http/Controllers/UserController';
-const breadcrumbs: BreadcrumbItem[] = [
-  {
-    title: 'Users',
-    href: usersIndex(),
-  },
-];
+	const breadcrumbs: BreadcrumbItem[] = [
+	    {
+	        title: 'Users',
+	        href: usersIndex(),
+	    },
+	];
 
 interface User {
   id: number
@@ -34,14 +34,10 @@ interface PaginationLink {
   active: boolean
 }
 
-interface Paginated<T> {
-  data: T[]
-  links: PaginationLink[]
-}
-
-interface Paginated<T> {
-  data: T[]
-}
+	interface Paginated<T> {
+	  data: T[]
+	  links: PaginationLink[]
+	}
 
 const deleteUser = (id: number) => {
   if (confirm('Are you sure you want to delete this user?')) {
@@ -103,15 +99,22 @@ defineProps<{
           </TableBody>
         </Table>
       </div>
-      <div class="mt-4 flex justify-end gap-1">
-        <Link v-for="(link, i) in users.links" :key="i" :href="link.url || ''" v-html="link.label"
-          class="px-3 py-1 border rounded text-sm" :class="[
-            link.active
-              ? 'bg-primary text-primary-foreground'
-              : 'bg-background hover:bg-muted',
-            !link.url && 'opacity-50 pointer-events-none'
-          ]" />
-      </div>
-    </div>
-  </AppLayout>
-</template>
+	      <div class="mt-4 flex justify-end gap-1">
+	        <Link
+	            v-for="(link, i) in users.links"
+	            :key="i"
+	            :href="link.url || ''"
+	            class="px-3 py-1 border rounded text-sm"
+	            :class="[
+	                link.active
+	                    ? 'bg-primary text-primary-foreground'
+	                    : 'bg-background hover:bg-muted',
+	                !link.url && 'opacity-50 pointer-events-none',
+	            ]"
+	        >
+	            <span v-html="link.label" />
+	        </Link>
+	      </div>
+	    </div>
+	  </AppLayout>
+	</template>

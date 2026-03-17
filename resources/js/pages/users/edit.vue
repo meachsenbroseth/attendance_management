@@ -1,21 +1,20 @@
 <script setup lang="ts">
-import { Head, Link, useForm } from '@inertiajs/vue3'
-import AppLayout from '@/layouts/AppLayout.vue'
-import type { BreadcrumbItem } from '@/types'
-import { index as usersIndex, update as usersUpdate } from '@/routes/users'
-
-import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import Button from '@/components/ui/button/Button.vue'
-import Label from '@/components/ui/label/Label.vue'
-import Input from '@/components/ui/input/Input.vue'
-import InputError from '@/components/InputError.vue'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+	import { Head, Link, useForm } from '@inertiajs/vue3'
+	import InputError from '@/components/InputError.vue'
+	import Button from '@/components/ui/button/Button.vue'
+	import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+	import Input from '@/components/ui/input/Input.vue'
+	import Label from '@/components/ui/label/Label.vue'
+	import {
+	  Select,
+	  SelectContent,
+	  SelectItem,
+	  SelectTrigger,
+	  SelectValue,
+	} from '@/components/ui/select'
+	import AppLayout from '@/layouts/AppLayout.vue'
+	import { index as usersIndex, update as usersUpdate } from '@/routes/users'
+	import type { BreadcrumbItem } from '@/types'
 
 interface User {
   id: number
