@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Classroom;
+use App\Models\Student;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -13,7 +15,7 @@ class ClassroomController extends Controller
      */
     public function index()
     {
-        $classrooms = Classroom::with('teacher')->latest()->get();
+         $classrooms = Classroom::with('teacher')->latest()->paginate(10);
 
         return Inertia::render('classrooms/index', [
             'classrooms' => $classrooms,
@@ -25,7 +27,11 @@ class ClassroomController extends Controller
      */
     public function create()
     {
-        //
+       $teachers = User::where('role', 'teacher')->get();
+
+        return Inertia::render('classrooms/create', [
+            'teachers' => $teachers
+        ]);
     }
 
     /**
@@ -33,38 +39,84 @@ class ClassroomController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'teacher_id' => 'required|exists:users,id',
+        ]);
+
+        Classroom::create($data);
+
+        return redirect()->route('classrooms.index');
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
-    {
-        //
-    }
+    public function show(string $id) {}
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    /**
+     * Show edit form
+     */
+    public function edit(Classroom $classroom)
     {
-        //
+        $teachers = User::where('role', 'teacher')->get();
+
+        return Inertia::render('classrooms/edit', [
+            'classroom' => $classroom->load('students'),
+            'teachers' => $teachers,
+        ]);
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update class
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Classroom $classroom)
     {
-        //
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'teacher_id' => 'required|exists:users,id',
+        ]);
+
+        $classroom->update($data);
+
+        return redirect()->route('classrooms.index');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Delete class
      */
-    public function destroy(string $id)
+    public function destroy(Classroom $classroom)
     {
-        //
+        $classroom->delete();
+
+        return redirect()->route('classrooms.index');
+    }
+
+    /**
+     * ⭐ Add student to class
+     */
+    public function addStudent(Request $request, Classroom $classroom)
+    {
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'student_code' => 'required|unique:students,student_code',
+        ]);
+
+        $classroom->students()->create($data);
+
+        return back();
+    }
+
+    /**
+     * ⭐ Remove student from class
+     */
+    public function removeStudent(Student $student)
+    {
+        $student->delete();
+
+        return back();
     }
 }

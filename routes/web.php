@@ -20,8 +20,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
     Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
 
-    //classrooms
+    // classrooms
     Route::get('/classrooms', [ClassroomController::class, 'index'])->name('classrooms.index');
+    Route::get('/classrooms/create', [ClassroomController::class, 'create'])->name('classrooms.create');
+    Route::post('/classrooms', [ClassroomController::class, 'store'])->name('classrooms.store');
+    Route::get('/classrooms/{classroom}', [ClassroomController::class, 'edit'])->name('classrooms.edit');    // ✅ {classroom}
+    Route::put('/classrooms/{classroom}', [ClassroomController::class, 'update'])->name('classrooms.update'); // ✅ {classroom}
+    Route::delete('/classrooms/{classroom}', [ClassroomController::class, 'destroy'])->name('classrooms.destroy'); // ✅ {classroom}
+
 });
 
 require __DIR__.'/settings.php';
