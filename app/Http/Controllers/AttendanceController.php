@@ -41,7 +41,7 @@ class AttendanceController extends Controller
             'date'                => 'required|date',
             'attendances'         => 'required|array',
             'attendances.*.student_id' => 'required|exists:students,id',
-            'attendances.*.status'     => 'required|in:present,absent,late',
+            'attendances.*.status'     => 'required|in:present,absent,permission',
         ]);
 
         foreach ($data['attendances'] as $record) {

@@ -1,17 +1,17 @@
 <script setup lang="ts">
 import { Head, useForm } from '@inertiajs/vue3'
-import AppLayout from '@/layouts/AppLayout.vue'
 import Button from '@/components/ui/button/Button.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  Table, TableBody, TableCell,
-  TableHead, TableHeader, TableRow,
-} from '@/components/ui/table'
 import Input from '@/components/ui/input/Input.vue'
 import {
   Select, SelectContent, SelectItem,
   SelectTrigger, SelectValue,
 } from '@/components/ui/select'
+import {
+  Table, TableBody, TableCell,
+  TableHead, TableHeader, TableRow,
+} from '@/components/ui/table'
+import AppLayout from '@/layouts/AppLayout.vue'
 import { index as attendancesIndex, store as attendancesStore } from '@/routes/attendances'
 import type { BreadcrumbItem } from '@/types'
 
@@ -49,13 +49,6 @@ const form = useForm({
 const submit = () => {
   form.post(attendancesStore.url(props.classroom.id))
 }
-
-// Status badge color
-const statusClass = (status: string) => ({
-  'present': 'bg-green-100 text-green-700',
-  'absent':  'bg-red-100 text-red-700',
-  'late':    'bg-yellow-100 text-yellow-700',
-}[status] ?? '')
 </script>
 
 <template>
