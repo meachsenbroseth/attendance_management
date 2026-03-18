@@ -6,6 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardAction } from '@/componen
 import Input from '@/components/ui/input/Input.vue'
 import Label from '@/components/ui/label/Label.vue'
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
   Table,
   TableBody,
   TableCell,
@@ -33,6 +40,7 @@ interface Teacher {
 interface Student {
   id: number
   name: string
+  gender: string
   student_code: string
 }
 
@@ -55,6 +63,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 // Add student form
 const studentForm = useForm({
   name: '',
+  gender: '',
 })
 
 const submitAddStudent = () => {
@@ -113,6 +122,8 @@ const removeStudent = (studentId: number) => {
 
           <!-- Add Student Form -->
           <form @submit.prevent="submitAddStudent" class="flex gap-3 items-start border rounded-md p-4 bg-muted/40">
+
+            <!-- Student Name -->
             <div class="flex-1">
               <Label for="student_name">Student Name</Label>
               <Input id="student_name" type="text" placeholder="Full name" v-model="studentForm.name"
@@ -120,11 +131,28 @@ const removeStudent = (studentId: number) => {
               <InputError :message="studentForm.errors.name" />
             </div>
 
+            <!-- Gender -->
+            <div class="flex-1">
+              <Label for="gender">Gender</Label>
+              <Select v-model="studentForm.gender">
+                <SelectTrigger id="gender" class="w-full" :aria-invalid="!!studentForm.errors.gender">
+                  <SelectValue placeholder="Select gender" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="male">Male</SelectItem>
+                  <SelectItem value="female">Female</SelectItem>
+                </SelectContent>
+              </Select>
+              <InputError :message="studentForm.errors.gender" />
+            </div>
+
+            <!-- Submit -->
             <div class="pt-6">
               <Button type="submit" :disabled="studentForm.processing">
                 + Add Student
               </Button>
             </div>
+
           </form>
 
           <!-- Students Table -->
@@ -149,6 +177,8 @@ const removeStudent = (studentId: number) => {
                 <TableRow v-for="(student, index) in classroom.students" :key="student.id">
                   <TableCell class="text-muted-foreground">{{ index + 1 }}</TableCell>
                   <TableCell class="font-medium">{{ student.name }}</TableCell>
+                  <TableCell class="font-medium">{{ student.gender }}</TableCell>
+
                   <TableCell>
                     <span class="font-mono text-sm bg-muted px-2 py-0.5 rounded">
                       {{ student.student_code }}

@@ -107,6 +107,7 @@ class ClassroomController extends Controller
     {
         $data = $request->validate([
             'name' => 'required|string|max:255',
+            'gender' => 'required|in:male,female',
         ]);
 
         $year = now()->year;
@@ -122,6 +123,7 @@ class ClassroomController extends Controller
 
         $classroom->students()->create([
             'name' => $data['name'],
+            'gender' => $data['gender'],
             'student_code' => $code,
         ]);
 
