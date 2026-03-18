@@ -36,6 +36,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // attendance
     Route::get('/attendances', [AttendanceController::class, 'index'])->name('attendances.index');
+    Route::get('/attendances/{classroom}', [AttendanceController::class, 'show'])->name('attendances.show');
+    Route::post('/attendances/{classroom}', [AttendanceController::class, 'store'])->name('attendances.store');
 });
 
 require __DIR__.'/settings.php';

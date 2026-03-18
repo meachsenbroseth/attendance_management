@@ -1,25 +1,54 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { dashboard } from '@/routes';
+import { index as attendancesIndex, show as attendancesShow} from '@/routes/attendances'
 import type { BreadcrumbItem } from '@/types';
 
+
+interface Classroom {
+    id: number
+    name: string
+}
+
+defineProps<{
+    classrooms: Classroom[]
+}>()
+
 const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Dashboard',
-        href: dashboard(),
-    },
-];
+    { title: 'Attendances', href: attendancesIndex.url() },
+]
 </script>
 
 <template>
-    <Head title="Attendance" />
+  <Head title="Attendances" />
 
-    <AppLayout :breadcrumbs="breadcrumbs">
-        <div
-            class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4"
+  <AppLayout :breadcrumbs="breadcrumbs">
+    <div class="flex h-full flex-1 flex-col gap-4 p-4">
+
+      <div class="flex justify-between items-center">
+        <h1 class="text-2xl font-bold">My Classrooms</h1>
+      </div>
+
+      <div v-if="classrooms.length === 0" class="text-muted-foreground text-center py-20">
+        You have no classrooms assigned.
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <Card
+          v-for="classroom in classrooms"
+          :key="classroom.id"
+          class="cursor-pointer hover:border-primary transition-colors"
+          @click="router.visit(attendancesShow.url(classroom.id))"
         >
-      <h1>Attendance</h1>
-        </div>
-    </AppLayout>
+          <CardHeader>
+            <CardTitle>{{ classroom.name }}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Button variant="outline" class="w-full">Take Attendance</Button>
+          </CardContent>
+        </Card>
+      </div>
+
+    </div>
+  </AppLayout>
 </template>

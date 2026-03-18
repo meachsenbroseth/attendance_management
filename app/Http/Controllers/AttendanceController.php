@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Attendance;
+use App\Models\Classroom;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class AttendanceController extends Controller
@@ -12,7 +15,13 @@ class AttendanceController extends Controller
      */
     public function index()
     {
-        return Inertia::render('attendances/index');
+        $classrooms = Classroom::with('teacher')
+            ->where('teacher_id', Auth::id())
+            ->get();
+
+        return Inertia::render('attendances/index', [
+            'classrooms' => $classrooms,
+        ]);
     }
 
     /**
@@ -26,17 +35,61 @@ class AttendanceController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request,Classroom $classroom)
     {
-        //
+        $data = $request->validate([
+            'date'                => 'required|date',
+            'attendances'         => 'required|array',
+            'attendances.*.student_id' => 'required|exists:students,id',
+            'attendances.*.status'     => 'required|in:present,absent,late',
+        ]);
+
+        foreach ($data['attendances'] as $record) {
+            Attendance::updateOrCreate(
+                [
+                    'student_id' => $record['student_id'],
+                    'date'       => $data['date'],
+                ],
+                [
+                    'class_id'  => $classroom->id,
+                    'status'    => $record['status'],
+                    'marked_by' => Auth::id(),
+                ]
+            );
+        }
+
+        return back()->with('success', 'Attendance saved.');
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Classroom $classroom, Request $request)
     {
-        //
+        $date = $request->query('date', today()->toDateString());
+        $students = $classroom->students;
+
+        // Get existing attendance for this date
+        $attendances = Attendance::where('class_id', $classroom->id)
+            ->where('date', $date)
+            ->get()
+            ->keyBy('student_id');
+
+        // Merge attendance status into students
+        $students = $students->map(function ($student) use ($attendances) {
+            return [
+                'id' => $student->id,
+                'name' => $student->name,
+                'student_code' => $student->student_code,
+                'status' => $attendances[$student->id]->status ?? 'present',
+            ];
+        });
+
+        return Inertia::render('attendances/show', [
+            'classroom' => $classroom,
+            'students' => $students,
+            'date' => $date,
+        ]);
     }
 
     /**
