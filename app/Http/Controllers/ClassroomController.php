@@ -6,6 +6,7 @@ use App\Models\Classroom;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class ClassroomController extends Controller
@@ -42,7 +43,12 @@ class ClassroomController extends Controller
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'teacher_id' => 'required|exists:users,id',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
+
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('classrooms', 'public');
+        }
 
         Classroom::create($data);
 
@@ -83,8 +89,16 @@ class ClassroomController extends Controller
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'teacher_id' => 'required|exists:users,id',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
+        if ($request->hasFile('image')) {
+            // Delete old image
+            if ($classroom->image) {
+                Storage::disk('public')->delete($classroom->image);
+            }
+            $data['image'] = $request->file('image')->store('classrooms', 'public');
+        }
         $classroom->update($data);
 
         return redirect()->route('classrooms.index');

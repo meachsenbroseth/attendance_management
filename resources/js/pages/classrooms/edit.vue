@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { Head, Link, useForm } from '@inertiajs/vue3'
 import InputError from '@/components/InputError.vue'
 import Button from '@/components/ui/button/Button.vue'
@@ -12,20 +13,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-
 import AppLayout from '@/layouts/AppLayout.vue'
 import {
   index as classroomsIndex,
-  update as classroomsUpdate
+  update as classroomsUpdate,
 } from '@/routes/classrooms/index'
-
 import type { BreadcrumbItem } from '@/types'
 
-const breadcrumbs: BreadcrumbItem[] = [
-  { title: 'Classrooms', href: classroomsIndex() },
-]
-
-// Types
 interface Teacher {
   id: number
   name: string
@@ -35,23 +29,41 @@ interface Classroom {
   id: number
   name: string
   teacher_id: number
+  image: string | null  // ✅ add image
 }
 
-// Props from Laravel
 const props = defineProps<{
   classroom: Classroom
   teachers: Teacher[]
 }>()
 
-// Form (pre-filled)
+const breadcrumbs: BreadcrumbItem[] = [
+  { title: 'Classrooms', href: classroomsIndex.url() },
+  { title: props.classroom.name, href: '#' },
+]
+
 const form = useForm({
   name: props.classroom.name,
-  teacher_id: props.classroom.teacher_id,
+  teacher_id: String(props.classroom.teacher_id),  // ✅ String for Select
+  image: null as File | null,
 })
 
-// Submit update
+// ✅ Preview: starts as null, shows existing image from storage if no new file chosen
+const imagePreview = ref<string | null>(null)
+
+const onImageChange = (e: Event) => {
+  const file = (e.target as HTMLInputElement).files?.[0]
+  if (file) {
+    form.image = file
+    imagePreview.value = URL.createObjectURL(file)
+  }
+}
+
+// ✅ Use post + _method PUT for file uploads (PUT can't send multipart)
 const submit = () => {
-  form.put(classroomsUpdate.url(props.classroom.id))
+  form.post(classroomsUpdate.url(props.classroom.id), {
+    forceFormData: true,
+  })
 }
 </script>
 
@@ -64,10 +76,9 @@ const submit = () => {
       <Card>
         <CardHeader class="flex items-center justify-between">
           <CardTitle>Edit Classroom</CardTitle>
-
           <CardAction>
-            <Link :href="classroomsIndex()">
-              <Button>Go back</Button>
+            <Link :href="classroomsIndex.url()">
+              <Button variant="outline">Go back</Button>
             </Link>
           </CardAction>
         </CardHeader>
@@ -90,28 +101,44 @@ const submit = () => {
             <!-- Teacher -->
             <div class="mt-6">
               <Label for="teacher">Assign Teacher</Label>
-
               <Select v-model="form.teacher_id">
-                <SelectTrigger
-                  id="teacher"
-                  class="w-full"
-                  :aria-invalid="!!form.errors.teacher_id"
-                >
+                <SelectTrigger id="teacher" class="w-full" :aria-invalid="!!form.errors.teacher_id">
                   <SelectValue placeholder="Select teacher" />
                 </SelectTrigger>
-
                 <SelectContent>
                   <SelectItem
                     v-for="teacher in teachers"
                     :key="teacher.id"
-                    :value="teacher.id"
+                    :value="String(teacher.id)"
                   >
                     {{ teacher.name }}
                   </SelectItem>
                 </SelectContent>
               </Select>
-
               <InputError :message="form.errors.teacher_id" />
+            </div>
+
+            <!-- Image Upload -->
+            <div class="mt-6">
+              <Label for="image">Classroom Image</Label>
+
+              <!-- Show new preview OR existing image from storage -->
+              <div v-if="imagePreview || classroom.image" class="mt-2 mb-3">
+                <img
+                  :src="imagePreview ?? `/storage/${classroom.image}`"
+                  class="w-32 h-32 object-cover rounded-lg border"
+                  alt="Classroom image"
+                />
+              </div>
+
+              <Input
+                id="image"
+                type="file"
+                accept="image/*"
+                @change="onImageChange"
+                :aria-invalid="!!form.errors.image"
+              />
+              <InputError :message="form.errors.image" />
             </div>
 
             <!-- Submit -->
