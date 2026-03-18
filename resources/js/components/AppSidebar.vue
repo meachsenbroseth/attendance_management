@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { LayoutGrid, School, User2Icon } from 'lucide-vue-next';
+import { GraduationCap, LayoutGrid, User2Icon } from 'lucide-vue-next';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
@@ -26,7 +26,7 @@ const mainNavItems: NavItem[] = [
     {
         title: 'Classrooms',
         href: '/classrooms',
-        icon: School,
+        icon: GraduationCap,
     },
     // {
     //     title: 'Classrooms',

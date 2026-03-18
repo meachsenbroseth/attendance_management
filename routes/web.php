@@ -24,9 +24,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/classrooms', [ClassroomController::class, 'index'])->name('classrooms.index');
     Route::get('/classrooms/create', [ClassroomController::class, 'create'])->name('classrooms.create');
     Route::post('/classrooms', [ClassroomController::class, 'store'])->name('classrooms.store');
-    Route::get('/classrooms/{classroom}', [ClassroomController::class, 'edit'])->name('classrooms.edit');    // ✅ {classroom}
-    Route::put('/classrooms/{classroom}', [ClassroomController::class, 'update'])->name('classrooms.update'); // ✅ {classroom}
-    Route::delete('/classrooms/{classroom}', [ClassroomController::class, 'destroy'])->name('classrooms.destroy'); // ✅ {classroom}
+    Route::get('/classrooms/{classroom}', [ClassroomController::class, 'show'])->name('classrooms.show');   // ✅ after create
+    Route::get('/classrooms/{classroom}/edit', [ClassroomController::class, 'edit'])->name('classrooms.edit');
+    Route::put('/classrooms/{classroom}', [ClassroomController::class, 'update'])->name('classrooms.update');
+    Route::delete('/classrooms/{classroom}', [ClassroomController::class, 'destroy'])->name('classrooms.destroy');
+    Route::post('/classrooms/{classroom}/students', [ClassroomController::class, 'addStudent'])->name('classrooms.students.add');
+    Route::delete('/students/{student}', [ClassroomController::class, 'removeStudent'])->name('classrooms.students.remove');
 
 });
 

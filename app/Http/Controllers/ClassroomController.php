@@ -15,7 +15,7 @@ class ClassroomController extends Controller
      */
     public function index()
     {
-         $classrooms = Classroom::with('teacher')->latest()->paginate(10);
+        $classrooms = Classroom::with('teacher')->latest()->paginate(10);
 
         return Inertia::render('classrooms/index', [
             'classrooms' => $classrooms,
@@ -27,10 +27,10 @@ class ClassroomController extends Controller
      */
     public function create()
     {
-       $teachers = User::where('role', 'teacher')->get();
+        $teachers = User::where('role', 'teacher')->get();
 
         return Inertia::render('classrooms/create', [
-            'teachers' => $teachers
+            'teachers' => $teachers,
         ]);
     }
 
@@ -52,7 +52,12 @@ class ClassroomController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id) {}
+    public function show(Classroom $classroom)
+    {
+        return Inertia::render('classrooms/show', [
+            'classroom' => $classroom->load(['students', 'teacher']),
+        ]);
+    }
 
     /**
      * Show the form for editing the specified resource.

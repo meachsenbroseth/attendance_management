@@ -16,7 +16,8 @@ import {
   index as classroomsIndex,
   create as classroomsCreate,
   edit as classroomsEdit,
-  destroy as classroomsDestroy
+  destroy as classroomsDestroy,
+  show as classroomsShow 
 } from '@/routes/classrooms/index'
 
 import type { BreadcrumbItem } from '@/types'
@@ -60,6 +61,7 @@ const deleteClassroom = (id: number) => {
 </script>
 
 <template>
+
   <Head title="Classrooms" />
 
   <AppLayout :breadcrumbs="breadcrumbs">
@@ -87,10 +89,7 @@ const deleteClassroom = (id: number) => {
           </TableHeader>
 
           <TableBody>
-            <TableRow
-              v-for="classroom in classroomsSortedById"
-              :key="classroom.id"
-            >
+            <TableRow v-for="classroom in classroomsSortedById" :key="classroom.id">
               <TableCell>{{ classroom.id }}</TableCell>
               <TableCell>{{ classroom.name }}</TableCell>
               <TableCell>
@@ -99,19 +98,14 @@ const deleteClassroom = (id: number) => {
 
               <TableCell class="text-right">
                 <div class="flex justify-end gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    @click="editClassroom(classroom.id)"
-                  >
+                  <Button variant="outline" size="sm" @click="router.visit(classroomsShow(classroom.id))">
+                    View
+                  </Button>
+                  <Button variant="outline" size="sm" @click="editClassroom(classroom.id)">
                     Edit
                   </Button>
 
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    @click="deleteClassroom(classroom.id)"
-                  >
+                  <Button variant="destructive" size="sm" @click="deleteClassroom(classroom.id)">
                     Delete
                   </Button>
                 </div>
@@ -123,18 +117,13 @@ const deleteClassroom = (id: number) => {
 
       <!-- Pagination -->
       <div class="mt-4 flex justify-end gap-1">
-        <Link
-          v-for="(link, i) in classrooms.links"
-          :key="i"
-          :href="link.url || ''"
-          class="px-3 py-1 border rounded text-sm"
-          :class="[
+        <Link v-for="(link, i) in classrooms.links" :key="i" :href="link.url || ''"
+          class="px-3 py-1 border rounded text-sm" :class="[
             link.active
               ? 'bg-primary text-primary-foreground'
               : 'bg-background hover:bg-muted',
             !link.url && 'opacity-50 pointer-events-none'
-          ]"
-        >
+          ]">
           <span v-html="link.label" />
         </Link>
       </div>
