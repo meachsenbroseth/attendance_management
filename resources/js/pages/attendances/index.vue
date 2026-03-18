@@ -1,25 +1,29 @@
 <script setup lang="ts">
 import { Head, router } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { index as attendancesIndex, show as attendancesShow} from '@/routes/attendances'
+import { index as attendancesIndex, show as attendancesShow } from '@/routes/attendances'
 import type { BreadcrumbItem } from '@/types';
+// import CardContent from '@/components/ui/card/CardContent.vue';
 
 
 interface Classroom {
-    id: number
-    name: string
+  id: number
+  name: string
+  image: string | null
 }
 
 defineProps<{
-    classrooms: Classroom[]
+  classrooms: Classroom[]
 }>()
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Attendances', href: attendancesIndex.url() },
+  { title: 'Attendances', href: attendancesIndex.url() },
 ]
 </script>
 
+
 <template>
+
   <Head title="Attendances" />
 
   <AppLayout :breadcrumbs="breadcrumbs">
@@ -34,18 +38,21 @@ const breadcrumbs: BreadcrumbItem[] = [
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <Card
-          v-for="classroom in classrooms"
-          :key="classroom.id"
-          class="cursor-pointer hover:border-primary transition-colors"
-          @click="router.visit(attendancesShow.url(classroom.id))"
-        >
-          <CardHeader>
-            <CardTitle>{{ classroom.name }}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Button variant="outline" class="w-full">Take Attendance</Button>
-          </CardContent>
+        <Card v-for="classroom in classrooms" :key="classroom.id"
+          class="cursor-pointer hover:shadow-md transition-shadow overflow-hidden p-0"
+          @click="router.visit(attendancesShow.url(classroom.id))">
+          <!-- Image -->
+          <img v-if="classroom.image" :src="`/storage/${classroom.image}`" :alt="classroom.name"
+            class="w-full h-44 object-cover" />
+          <!-- Fallback -->
+          <div v-else class="w-full h-44 bg-muted flex items-center justify-center">
+            <span class="text-muted-foreground text-sm">No image</span>
+          </div>
+
+          <!-- Title -->
+          <div class="px-4 py-3">
+            <p class="text-base font-semibold text-center">{{ classroom.name }}</p>
+          </div>
         </Card>
       </div>
 

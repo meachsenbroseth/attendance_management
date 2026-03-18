@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import { Head, Link, useForm } from '@inertiajs/vue3'
+import { ref, toRefs } from 'vue'
 import InputError from '@/components/InputError.vue'
 import Button from '@/components/ui/button/Button.vue'
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -37,14 +37,16 @@ const props = defineProps<{
   teachers: Teacher[]
 }>()
 
+const { classroom, teachers } = toRefs(props)
+
 const breadcrumbs: BreadcrumbItem[] = [
   { title: 'Classrooms', href: classroomsIndex.url() },
-  { title: props.classroom.name, href: '#' },
+  { title: classroom.value.name, href: '#' },
 ]
 
 const form = useForm({
-  name: props.classroom.name,
-  teacher_id: String(props.classroom.teacher_id),  // ✅ String for Select
+  name: classroom.value.name,
+  teacher_id: String(classroom.value.teacher_id),  // ✅ String for Select
   image: null as File | null,
 })
 
@@ -53,24 +55,24 @@ const imagePreview = ref<string | null>(null)
 
 const onImageChange = (e: Event) => {
   const file = (e.target as HTMLInputElement).files?.[0]
+
   if (file) {
     form.image = file
     imagePreview.value = URL.createObjectURL(file)
   }
 }
 
-// ✅ Use post + _method PUT for file uploads (PUT can't send multipart)
+// ✅ Update route is POST to support multipart uploads
 const submit = () => {
-  form.post(classroomsUpdate.url(props.classroom.id), {
+  form.post(classroomsUpdate.url(classroom.value.id), {
     forceFormData: true,
   })
 }
 </script>
 
 <template>
-  <Head title="Edit Classroom" />
-
   <AppLayout :breadcrumbs="breadcrumbs">
+    <Head title="Edit Classroom" />
     <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
 
       <Card>

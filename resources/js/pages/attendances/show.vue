@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { Head, useForm } from '@inertiajs/vue3'
+import { Head, useForm, usePage } from '@inertiajs/vue3'
+import { computed, toRefs } from 'vue'
 import Button from '@/components/ui/button/Button.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Input from '@/components/ui/input/Input.vue'
@@ -13,13 +14,13 @@ import {
 } from '@/components/ui/table'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { index as attendancesIndex, store as attendancesStore } from '@/routes/attendances'
-import type { BreadcrumbItem } from '@/types'
+import type { BreadcrumbItem, PageProps } from '@/types'
 
 interface Student {
   id: number
   name: string
   student_code: string
-  status: 'present' | 'absent' | 'late'
+  status: 'present' | 'absent' | 'permission'
 }
 
 interface Classroom {
@@ -33,28 +34,32 @@ const props = defineProps<{
   date: string
 }>()
 
+const { classroom, students, date } = toRefs(props)
+
 const breadcrumbs: BreadcrumbItem[] = [
   { title: 'Attendances', href: attendancesIndex.url() },
-  { title: props.classroom.name, href: '#' },
+  { title: classroom.value.name, href: '#' },
 ]
 
 const form = useForm({
-  date: props.date,
-  attendances: props.students.map(s => ({
-    student_id: s.id,
-    status: s.status,
+  date: date.value,
+  attendances: students.value.map((student) => ({
+    student_id: student.id,
+    status: student.status,
   })),
 })
 
+const page = usePage<PageProps>()
+const success = computed(() => page.props.flash?.success)
+
 const submit = () => {
-  form.post(attendancesStore.url(props.classroom.id))
+  form.post(attendancesStore.url(classroom.value.id))
 }
 </script>
 
 <template>
-  <Head :title="`Attendance – ${classroom.name}`" />
-
   <AppLayout :breadcrumbs="breadcrumbs">
+    <Head :title="`Attendance – ${classroom.name}`" />
     <div class="flex h-full flex-1 flex-col gap-6 p-4">
 
       <Card>
@@ -62,15 +67,18 @@ const submit = () => {
           <CardTitle>{{ classroom.name }} — Attendance</CardTitle>
 
           <!-- Date picker -->
-          <Input
-            type="date"
-            class="w-48"
-            v-model="form.date"
-          />
+          <Input type="date" class="w-48" v-model="form.date" />
         </CardHeader>
 
         <CardContent>
           <div class="border rounded-md">
+            
+            <!-- ✅ Success message -->
+            <div v-if="success"
+              class="mb-4 flex items-center gap-2 rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+              <span>✅</span>
+              <span>{{ success }}</span>
+            </div>
             <Table>
               <TableHeader class="bg-secondary">
                 <TableRow>
@@ -88,10 +96,7 @@ const submit = () => {
                   </TableCell>
                 </TableRow>
 
-                <TableRow
-                  v-for="(student, index) in students"
-                  :key="student.id"
-                >
+                <TableRow v-for="(student, index) in students" :key="student.id">
                   <TableCell class="text-muted-foreground">{{ index + 1 }}</TableCell>
                   <TableCell class="font-medium">{{ student.name }}</TableCell>
                   <TableCell>
@@ -103,15 +108,15 @@ const submit = () => {
                     <Select v-model="form.attendances[index].status">
                       <SelectTrigger class="w-32">
                         <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="present">✅ Present</SelectItem>
-                        <SelectItem value="absent">❌ Absent</SelectItem>
-                        <SelectItem value="late">⏰ Late</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
-                </TableRow>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="present">✅ Present</SelectItem>
+                      <SelectItem value="absent">❌ Absent</SelectItem>
+                      <SelectItem value="permission">📝 Permission</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </TableCell>
+              </TableRow>
               </TableBody>
             </Table>
           </div>

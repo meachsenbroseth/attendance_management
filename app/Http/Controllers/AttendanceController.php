@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Attendance;
 use App\Models\Classroom;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -35,30 +36,34 @@ class AttendanceController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request,Classroom $classroom)
+    public function store(Request $request, Classroom $classroom)
     {
+        abort_if($classroom->teacher_id !== Auth::id(), 403);
+
         $data = $request->validate([
-            'date'                => 'required|date',
-            'attendances'         => 'required|array',
+            'date' => 'required|date',
+            'attendances' => 'required|array',
             'attendances.*.student_id' => 'required|exists:students,id',
-            'attendances.*.status'     => 'required|in:present,absent,permission',
+            'attendances.*.status' => 'required|in:present,absent,permission',
         ]);
+
+        $date = Carbon::parse($data['date'])->toDateString(); // ✅ cast once
 
         foreach ($data['attendances'] as $record) {
             Attendance::updateOrCreate(
                 [
                     'student_id' => $record['student_id'],
-                    'date'       => $data['date'],
+                    'date' => $date,
                 ],
                 [
-                    'class_id'  => $classroom->id,
-                    'status'    => $record['status'],
+                    'class_id' => $classroom->id,
+                    'status' => $record['status'],
                     'marked_by' => Auth::id(),
                 ]
             );
         }
 
-        return back()->with('success', 'Attendance saved.');
+        return back()->with('success', 'Attendance saved successfully.');
     }
 
     /**

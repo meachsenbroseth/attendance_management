@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import { Head, Link, useForm } from '@inertiajs/vue3'
+import { ref } from 'vue'
 import InputError from '@/components/InputError.vue'
 import Button from '@/components/ui/button/Button.vue'
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -44,6 +44,7 @@ const imagePreview = ref<string | null>(null)
 
 const onImageChange = (e: Event) => {
   const file = (e.target as HTMLInputElement).files?.[0]
+
   if (file) {
     form.image = file
     imagePreview.value = URL.createObjectURL(file)
@@ -58,9 +59,8 @@ const submit = () => {
 </script>
 
 <template>
-  <Head title="Create Classroom" />
-
   <AppLayout :breadcrumbs="breadcrumbs">
+    <Head title="Create Classroom" />
     <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
 
       <Card>
