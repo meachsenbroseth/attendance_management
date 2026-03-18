@@ -24,6 +24,7 @@ import AppLayout from '@/layouts/AppLayout.vue'
 import {
   index as classroomsIndex,
   edit as classroomsEdit,
+  index,
 } from '@/routes/classrooms'
 import {
   add as classroomsStudentsAdd,
@@ -92,9 +93,14 @@ const removeStudent = (studentId: number) => {
         <CardHeader class="flex items-center justify-between">
           <CardTitle>{{ classroom.name }}</CardTitle>
           <CardAction>
-            <Link :href="classroomsEdit(classroom.id)">
-              <Button variant="outline" size="sm">Edit Classroom</Button>
-            </Link>
+            <div class="flex gap-2">
+              <Link :href="index()">
+                <Button size="sm">Back</Button>
+              </Link>
+              <Link :href="classroomsEdit(classroom.id)">
+                <Button variant="outline" size="sm">Edit Classroom</Button>
+              </Link>
+            </div>
           </CardAction>
         </CardHeader>
 
@@ -121,38 +127,38 @@ const removeStudent = (studentId: number) => {
         <CardContent class="flex flex-col gap-6">
 
           <!-- Add Student Form -->
-          <form @submit.prevent="submitAddStudent" class="flex gap-3 items-start border rounded-md p-4 bg-muted/40">
+          <form @submit.prevent="submitAddStudent" class="border rounded-md p-4 bg-muted/40">
+            <div class="grid grid-cols-3 gap-3 items-end w-full">
+              <!-- Student Name -->
+              <div class="flex-1">
+                <Label for="student_name">Student Name</Label>
+                <Input id="student_name" type="text" placeholder="Full name" v-model="studentForm.name"
+                  :aria-invalid="!!studentForm.errors.name" />
+                <InputError :message="studentForm.errors.name" />
+              </div>
 
-            <!-- Student Name -->
-            <div class="flex-1">
-              <Label for="student_name">Student Name</Label>
-              <Input id="student_name" type="text" placeholder="Full name" v-model="studentForm.name"
-                :aria-invalid="!!studentForm.errors.name" />
-              <InputError :message="studentForm.errors.name" />
+              <!-- Gender -->
+              <div class="flex-1">
+                <Label for="gender">Gender</Label>
+                <Select v-model="studentForm.gender">
+                  <SelectTrigger id="gender" class="w-full" :aria-invalid="!!studentForm.errors.gender">
+                    <SelectValue placeholder="Select gender" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="male">Male</SelectItem>
+                    <SelectItem value="female">Female</SelectItem>
+                  </SelectContent>
+                </Select>
+                <InputError :message="studentForm.errors.gender" />
+              </div>
+
+              <!-- Submit -->
+              <div class="pt-6">
+                <Button type="submit" :disabled="studentForm.processing">
+                  + Add Student
+                </Button>
+              </div>
             </div>
-
-            <!-- Gender -->
-            <div class="flex-1">
-              <Label for="gender">Gender</Label>
-              <Select v-model="studentForm.gender">
-                <SelectTrigger id="gender" class="w-full" :aria-invalid="!!studentForm.errors.gender">
-                  <SelectValue placeholder="Select gender" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="male">Male</SelectItem>
-                  <SelectItem value="female">Female</SelectItem>
-                </SelectContent>
-              </Select>
-              <InputError :message="studentForm.errors.gender" />
-            </div>
-
-            <!-- Submit -->
-            <div class="pt-6">
-              <Button type="submit" :disabled="studentForm.processing">
-                + Add Student
-              </Button>
-            </div>
-
           </form>
 
           <!-- Students Table -->
@@ -162,6 +168,7 @@ const removeStudent = (studentId: number) => {
                 <TableRow>
                   <TableHead class="w-12">#</TableHead>
                   <TableHead>Name</TableHead>
+                  <TableHead>Gender</TableHead>
                   <TableHead>Student Code</TableHead>
                   <TableHead class="text-right">Action</TableHead>
                 </TableRow>

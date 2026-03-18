@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\ClassroomController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -33,6 +34,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/classrooms/{classroom}/students', [ClassroomController::class, 'addStudent'])->name('classrooms.students.add');
     Route::delete('/students/{student}', [ClassroomController::class, 'removeStudent'])->name('classrooms.students.remove');
 
+    // attendance
+    Route::get('/attendances', [AttendanceController::class, 'index'])->name('attendances.index');
 });
 
 require __DIR__.'/settings.php';
