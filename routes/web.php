@@ -28,6 +28,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/classrooms/{classroom}/edit', [ClassroomController::class, 'edit'])->name('classrooms.edit');
     Route::put('/classrooms/{classroom}', [ClassroomController::class, 'update'])->name('classrooms.update');
     Route::delete('/classrooms/{classroom}', [ClassroomController::class, 'destroy'])->name('classrooms.destroy');
+
+    // student
     Route::post('/classrooms/{classroom}/students', [ClassroomController::class, 'addStudent'])->name('classrooms.students.add');
     Route::delete('/students/{student}', [ClassroomController::class, 'removeStudent'])->name('classrooms.students.remove');
 

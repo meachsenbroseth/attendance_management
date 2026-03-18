@@ -101,22 +101,35 @@ class ClassroomController extends Controller
     }
 
     /**
-     * ⭐ Add student to class
+     *  Add student to class
      */
     public function addStudent(Request $request, Classroom $classroom)
     {
         $data = $request->validate([
             'name' => 'required|string|max:255',
-            'student_code' => 'required|unique:students,student_code',
         ]);
 
-        $classroom->students()->create($data);
+        $year = now()->year;
+        $lastStudent = Student::whereYear('created_at', $year)
+            ->orderByDesc('id')
+            ->first();
+
+        $nextNumber = $lastStudent
+            ? (int) substr($lastStudent->student_code, -4) + 1
+            : 1;
+
+        $code = 'STU-'.$year.'-'.str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+
+        $classroom->students()->create([
+            'name' => $data['name'],
+            'student_code' => $code,
+        ]);
 
         return back();
     }
 
     /**
-     * ⭐ Remove student from class
+     *  Remove student from class
      */
     public function removeStudent(Student $student)
     {

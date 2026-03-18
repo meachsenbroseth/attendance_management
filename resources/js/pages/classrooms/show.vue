@@ -17,9 +17,11 @@ import AppLayout from '@/layouts/AppLayout.vue'
 import {
   index as classroomsIndex,
   edit as classroomsEdit,
-  addStudent as classroomsAddStudent,
-  removeStudent as classroomsRemoveStudent,
 } from '@/routes/classrooms'
+import {
+  add as classroomsStudentsAdd,
+  remove as classroomsStudentsRemove,
+} from '@/routes/classrooms/students'
 import type { BreadcrumbItem } from '@/types'
 
 // Types
@@ -53,11 +55,10 @@ const breadcrumbs: BreadcrumbItem[] = [
 // Add student form
 const studentForm = useForm({
   name: '',
-  student_code: '',
 })
 
 const submitAddStudent = () => {
-  studentForm.post(classroomsAddStudent(props.classroom.id), {
+  studentForm.post(classroomsStudentsAdd.url(props.classroom.id), {
     onSuccess: () => studentForm.reset(),
   })
 }
@@ -65,12 +66,13 @@ const submitAddStudent = () => {
 // Remove student
 const removeStudent = (studentId: number) => {
   if (confirm('Remove this student from the classroom?')) {
-    router.delete(classroomsRemoveStudent(studentId))
+    router.delete(classroomsStudentsRemove.url(studentId))
   }
 }
 </script>
 
 <template>
+
   <Head :title="classroom.name" />
 
   <AppLayout :breadcrumbs="breadcrumbs">
@@ -113,26 +115,9 @@ const removeStudent = (studentId: number) => {
           <form @submit.prevent="submitAddStudent" class="flex gap-3 items-start border rounded-md p-4 bg-muted/40">
             <div class="flex-1">
               <Label for="student_name">Student Name</Label>
-              <Input
-                id="student_name"
-                type="text"
-                placeholder="Full name"
-                v-model="studentForm.name"
-                :aria-invalid="!!studentForm.errors.name"
-              />
+              <Input id="student_name" type="text" placeholder="Full name" v-model="studentForm.name"
+                :aria-invalid="!!studentForm.errors.name" />
               <InputError :message="studentForm.errors.name" />
-            </div>
-
-            <div class="flex-1">
-              <Label for="student_code">Student Code</Label>
-              <Input
-                id="student_code"
-                type="text"
-                placeholder="e.g. STU-001"
-                v-model="studentForm.student_code"
-                :aria-invalid="!!studentForm.errors.student_code"
-              />
-              <InputError :message="studentForm.errors.student_code" />
             </div>
 
             <div class="pt-6">
@@ -161,10 +146,7 @@ const removeStudent = (studentId: number) => {
                   </TableCell>
                 </TableRow>
 
-                <TableRow
-                  v-for="(student, index) in classroom.students"
-                  :key="student.id"
-                >
+                <TableRow v-for="(student, index) in classroom.students" :key="student.id">
                   <TableCell class="text-muted-foreground">{{ index + 1 }}</TableCell>
                   <TableCell class="font-medium">{{ student.name }}</TableCell>
                   <TableCell>
@@ -173,11 +155,7 @@ const removeStudent = (studentId: number) => {
                     </span>
                   </TableCell>
                   <TableCell class="text-right">
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      @click="removeStudent(student.id)"
-                    >
+                    <Button variant="destructive" size="sm" @click="removeStudent(student.id)">
                       Remove
                     </Button>
                   </TableCell>
