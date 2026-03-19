@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import { LayoutGrid, NotebookPen, UniversityIcon, User2Icon } from 'lucide-vue-next';
+import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
@@ -15,30 +16,41 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
-import type { NavItem } from '@/types';
+import type { NavItem, PageProps } from '@/types';
 
-const mainNavItems: NavItem[] = [
+const page = usePage<PageProps>();
+const role = computed(() => page.props.auth.user.role); // 'admin' | 'teacher'
+
+const allNavItems: (NavItem & { roles?: string[] })[] = [
     {
         title: 'Dashboard',
         href: dashboard(),
         icon: LayoutGrid,
+        // no roles = visible to everyone
     },
     {
         title: 'Classrooms',
         href: '/classrooms',
         icon: UniversityIcon,
+        roles: ['admin'],           // ✅ admin only
     },
     {
         title: 'Attendances',
         href: '/attendances',
         icon: NotebookPen,
+        roles: ['admin', 'teacher'], // ✅ both can see
     },
     {
         title: 'Users',
         href: '/users',
         icon: User2Icon,
+        roles: ['admin'],           // ✅ admin only
     },
 ];
+
+const mainNavItems = computed(() =>
+    allNavItems.filter((item) => !item.roles || item.roles.includes(role.value)),
+);
 
 const footerNavItems: NavItem[] = [
     // {

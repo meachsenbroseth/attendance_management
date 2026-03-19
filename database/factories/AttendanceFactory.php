@@ -27,7 +27,7 @@ class AttendanceFactory extends Factory
             'student_id' => $student->id,
             'class_id' => $classroom->id,
             'date' => now()->toDateString(),
-            'status' => fake()->randomElement(['present', 'absent', 'late']),
+            'status' => fake()->randomElement(['present', 'absent', 'permission']),
             'marked_by' => User::factory()->state([
                 'role' => 'teacher',
             ]),
