@@ -14,8 +14,10 @@ class ClassroomController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
+        abort_unless($request->user()->isAdmin(), 403);
+        
         $classrooms = Classroom::with('teacher')->latest()->paginate(10);
 
         return Inertia::render('classrooms/index', [
@@ -26,8 +28,10 @@ class ClassroomController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
+        abort_unless($request->user()->isAdmin(), 403);
+
         $teachers = User::where('role', 'teacher')->get();
 
         return Inertia::render('classrooms/create', [
@@ -40,6 +44,8 @@ class ClassroomController extends Controller
      */
     public function store(Request $request)
     {
+        abort_unless($request->user()->isAdmin(), 403);
+
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'teacher_id' => 'required|exists:users,id',
@@ -58,8 +64,10 @@ class ClassroomController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Classroom $classroom)
+    public function show(Request$request,Classroom $classroom)
     {
+        abort_unless($request->user()->isAdmin(), 403);
+
         return Inertia::render('classrooms/show', [
             'classroom' => $classroom->load(['students', 'teacher']),
         ]);
@@ -71,8 +79,10 @@ class ClassroomController extends Controller
     /**
      * Show edit form
      */
-    public function edit(Classroom $classroom)
+    public function edit(Request $request,Classroom $classroom)
     {
+        abort_unless($request->user()->isAdmin(), 403);
+
         $teachers = User::where('role', 'teacher')->get();
 
         return Inertia::render('classrooms/edit', [
@@ -84,8 +94,10 @@ class ClassroomController extends Controller
     /**
      * Update class
      */
-    public function update(Request $request, Classroom $classroom)
+    public function update(Request $request, Classroom $classroom)  
     {
+        abort_unless($request->user()->isAdmin(), 403);
+
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'teacher_id' => 'required|exists:users,id',
@@ -107,8 +119,10 @@ class ClassroomController extends Controller
     /**
      * Delete class
      */
-    public function destroy(Classroom $classroom)
+    public function destroy(Request $request,Classroom $classroom)
     {
+        abort_unless($request->user()->isAdmin(), 403);
+        
         $classroom->delete();
 
         return redirect()->route('classrooms.index');
@@ -119,6 +133,8 @@ class ClassroomController extends Controller
      */
     public function addStudent(Request $request, Classroom $classroom)
     {
+        abort_unless($request->user()->isAdmin(), 403);
+
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'gender' => 'required|in:male,female',
@@ -147,8 +163,10 @@ class ClassroomController extends Controller
     /**
      *  Remove student from class
      */
-    public function removeStudent(Student $student)
+    public function removeStudent(Request $request,Student $student)
     {
+        abort_unless($request->user()->isAdmin(), 403);
+
         $student->delete();
 
         return back();

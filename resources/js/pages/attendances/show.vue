@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { Head, useForm, usePage } from '@inertiajs/vue3'
-import { computed, toRefs } from 'vue'
+import { Head, useForm, usePage } from '@inertiajs/vue3'  
+import { computed } from 'vue'
 import Button from '@/components/ui/button/Button.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import Input from '@/components/ui/input/Input.vue'
 import {
   Select, SelectContent, SelectItem,
   SelectTrigger, SelectValue,
@@ -32,53 +31,57 @@ const props = defineProps<{
   classroom: Classroom
   students: Student[]
   date: string
+  alreadyMarked: boolean
 }>()
-
-const { classroom, students, date } = toRefs(props)
 
 const breadcrumbs: BreadcrumbItem[] = [
   { title: 'Attendances', href: attendancesIndex.url() },
-  { title: classroom.value.name, href: '#' },
+  { title: props.classroom.name, href: '#' },
 ]
 
 const form = useForm({
-  date: date.value,
-  attendances: students.value.map((student) => ({
+  date: props.date, 
+  attendances: props.students.map((student) => ({
     student_id: student.id,
     status: student.status,
   })),
 })
 
-const page = usePage<PageProps>()
-const success = computed(() => page.props.flash?.success)
+const success = computed(() => usePage<PageProps>().props.flash?.success)
 
 const submit = () => {
-  form.post(attendancesStore.url(classroom.value.id))
+  form.post(attendancesStore.url(props.classroom.id))
 }
 </script>
 
 <template>
   <AppLayout :breadcrumbs="breadcrumbs">
     <Head :title="`Attendance – ${classroom.name}`" />
-    <div class="flex h-full flex-1 flex-col gap-6 p-4">
 
+    <div class="flex h-full flex-1 flex-col gap-6 p-4">
       <Card>
         <CardHeader class="flex items-center justify-between">
           <CardTitle>{{ classroom.name }} — Attendance</CardTitle>
 
-          <!-- Date picker -->
-          <Input type="date" class="w-48" v-model="form.date" />
+          <!-- ✅ Show date as read-only text, no input -->
+          <span class="text-sm text-muted-foreground">📅 {{ date }}</span>
         </CardHeader>
 
         <CardContent>
+
+          <!-- Success message -->
+          <div v-if="success"
+            class="mb-4 flex items-center gap-2 rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+            ✅ {{ success }}
+          </div>
+
+          <!-- Already marked warning -->
+          <div v-if="alreadyMarked"
+            class="mb-4 flex items-center gap-2 rounded-md border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-700">
+            ⚠️ Attendance for this date has already been recorded.
+          </div>
+
           <div class="border rounded-md">
-            
-            <!-- ✅ Success message -->
-            <div v-if="success"
-              class="mb-4 flex items-center gap-2 rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
-              <span>✅</span>
-              <span>{{ success }}</span>
-            </div>
             <Table>
               <TableHeader class="bg-secondary">
                 <TableRow>
@@ -105,31 +108,31 @@ const submit = () => {
                     </span>
                   </TableCell>
                   <TableCell>
-                    <Select v-model="form.attendances[index].status">
-                      <SelectTrigger class="w-32">
+                    <Select v-model="form.attendances[index].status" :disabled="alreadyMarked">
+                      <SelectTrigger class="w-32" :disabled="alreadyMarked">
                         <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="present">✅ Present</SelectItem>
-                      <SelectItem value="absent">❌ Absent</SelectItem>
-                      <SelectItem value="permission">📝 Permission</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </TableCell>
-              </TableRow>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="present">✅ Present</SelectItem>
+                        <SelectItem value="absent">❌ Absent</SelectItem>
+                        <SelectItem value="permission">📝 Permission</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </TableCell>
+                </TableRow>
               </TableBody>
             </Table>
           </div>
 
           <!-- Save -->
           <div class="flex justify-end mt-6">
-            <Button size="lg" @click="submit" :disabled="form.processing">
+            <Button size="lg" @click="submit" :disabled="form.processing || alreadyMarked">
               Save Attendance
             </Button>
           </div>
+
         </CardContent>
       </Card>
-
     </div>
   </AppLayout>
 </template>

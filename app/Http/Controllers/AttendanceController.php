@@ -71,6 +71,8 @@ class AttendanceController extends Controller
      */
     public function show(Classroom $classroom, Request $request)
     {
+        abort_if($classroom->teacher_id !== Auth::id(), 403);
+
         $date = $request->query('date', today()->toDateString());
         $students = $classroom->students;
 
@@ -89,11 +91,15 @@ class AttendanceController extends Controller
                 'status' => $attendances[$student->id]->status ?? 'present',
             ];
         });
+        $alreadyMarked = Attendance::where('class_id', $classroom->id)
+            ->where('date', $date)
+            ->exists();
 
         return Inertia::render('attendances/show', [
             'classroom' => $classroom,
             'students' => $students,
             'date' => $date,
+            'alreadyMarked' => $alreadyMarked,
         ]);
     }
 
