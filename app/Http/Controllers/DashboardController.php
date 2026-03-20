@@ -17,6 +17,15 @@ class DashboardController extends Controller
         $today = today()->format('Y-m-d');
         $user = Auth::user();
 
+        if ($user->role === 'teacher') {
+            $classroomCount = Classroom::where('teacher_id', $user->id)->count();
+
+            return Inertia::render('Dashboard', [
+                'role' => 'teacher',
+                'classroomCount' => $classroomCount,
+            ]);
+        }
+
         // Stats cards
         $totalUsers = User::count();
         $totalTeachers = User::where('role', 'teacher')->count();
@@ -67,6 +76,7 @@ class DashboardController extends Controller
             ->count('marked_by');
 
         return Inertia::render('Dashboard', [
+            'role' => 'admin',
             'stats' => [
                 'totalUsers' => $totalUsers,
                 'totalTeachers' => $totalTeachers,

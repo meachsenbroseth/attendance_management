@@ -1,27 +1,35 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
-import {
-  Users,
-  GraduationCap,
-  BookOpen,
-  School,
-  CheckCircle,
-  UserX,
-  TrendingUp,
-  CalendarDays
-} from 'lucide-vue-next'
-import AppLayout from '@/layouts/AppLayout.vue';
-import { dashboard } from '@/routes';
-import type { BreadcrumbItem } from '@/types';
-import Card from '@/components/ui/card/Card.vue';
-import { computed } from 'vue';
+import { Head, usePage } from '@inertiajs/vue3'
+import { computed } from 'vue'
+import { GraduationCap, BookOpen, School, CheckCircle, UserX, CalendarDays, TrendingUp } from 'lucide-vue-next'  // ✅ add missing icons
+import AppLayout from '@/layouts/AppLayout.vue'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { dashboard } from '@/routes'
+import type { BreadcrumbItem, PageProps } from '@/types'
 
 const breadcrumbs: BreadcrumbItem[] = [
-  {
-    title: 'Dashboard',
-    href: dashboard(),
-  },
-];
+  { title: 'Dashboard', href: dashboard() },
+]
+
+const page = usePage<PageProps>()
+const userName = computed(() => page.props.auth.user.name)
+
+const greeting = computed(() => {
+  const hour = new Date().getHours()
+  if (hour < 12) return 'Good morning'
+  if (hour < 18) return 'Good afternoon'
+  return 'Good evening'
+})
+
+const currentDate = computed(() =>
+  new Date().toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+)
+
 interface ClassAttendance {
   name: string
   present: number
@@ -35,7 +43,6 @@ interface WeeklyTrend {
 }
 
 interface Stats {
-  totalUsers: number
   totalTeachers: number
   totalStudents: number
   totalClassrooms: number
@@ -49,162 +56,183 @@ interface BottomStats {
 }
 
 const props = defineProps<{
-  stats: Stats
-  todayClassAttendance: ClassAttendance[]
-  weeklyTrend: WeeklyTrend[]
-  bottomStats: BottomStats
+  role: 'admin' | 'teacher'
+  classroomCount?: number
+  stats?: Stats
+  todayClassAttendance?: ClassAttendance[]
+  weeklyTrend?: WeeklyTrend[]
+  bottomStats?: BottomStats
 }>()
 
-const statCards = computed(() => [
-  {
-    label: 'Total Teachers',
-    value: props.stats.totalTeachers.toLocaleString(),
-    icon: GraduationCap,
-    bg: 'bg-blue-100',
-    color: 'text-blue-500',
-  },
-  {
-    label: 'Total Students',
-    value: props.stats.totalStudents.toLocaleString(),
-    icon: BookOpen,
-    bg: 'bg-green-100',
-    color: 'text-green-500',
-  },
-  {
-    label: 'Total Classrooms',
-    value: props.stats.totalClassrooms.toLocaleString(),
-    icon: School,
-    bg: 'bg-orange-100',
-    color: 'text-orange-500',
-  },
-  {
-    label: "Today's Attendance Rate",
-    value: `${props.stats.todayRate}%`,
-    icon: CheckCircle,
-    bg: 'bg-teal-100',
-    color: 'text-teal-500',
-  },
-])
+// ✅ Fixed — if guard outside the array
+const statCards = computed(() => {
+  if (!props.stats) return []
+  return [
+    {
+      label: 'Total Teachers',
+      value: props.stats.totalTeachers.toLocaleString(),
+      icon: GraduationCap,
+      bg: 'bg-blue-100',
+      color: 'text-blue-500',
+    },
+    {
+      label: 'Total Students',
+      value: props.stats.totalStudents.toLocaleString(),
+      icon: BookOpen,
+      bg: 'bg-green-100',
+      color: 'text-green-500',
+    },
+    {
+      label: 'Total Classrooms',
+      value: props.stats.totalClassrooms.toLocaleString(),
+      icon: School,
+      bg: 'bg-orange-100',
+      color: 'text-orange-500',
+    },
+    {
+      label: "Today's Attendance Rate",
+      value: `${props.stats.todayRate}%`,
+      icon: CheckCircle,
+      bg: 'bg-teal-100',
+      color: 'text-teal-500',
+    },
+  ]
+})
 </script>
-<template>
 
+<template>
   <Head title="Dashboard" />
 
   <AppLayout :breadcrumbs="breadcrumbs">
     <div class="p-6 flex flex-col gap-6">
 
-      <!-- Top Stats -->
-      <div class="grid grid-cols-2 xl:grid-cols-4 gap-4">
-        <Card v-for="item in statCards" :key="item.label">
-          <CardContent class="flex items-center justify-between p-5">
-            <div class="flex flex-col gap-1">
-              <p class="text-xs text-muted-foreground">{{ item.label }}</p>
-              <p class="text-3xl font-bold">{{ item.value }}</p>
-            </div>
-            <div :class="`w-11 h-11 rounded-full ${item.bg} flex items-center justify-center shrink-0`">
-              <component :is="item.icon" :class="`w-5 h-5 ${item.color}`" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-      <!-- Middle Charts -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- ✅ Teacher view -->
+      <template v-if="role === 'teacher'">
+        <div class="rounded-xl bg-accent/40 border px-6 py-8">
+          <p class="text-xs font-semibold uppercase tracking-widest text-primary mb-1">
+            Teacher Portal
+          </p>
+          <h1 class="text-3xl font-bold text-foreground">
+            {{ greeting }}, {{ userName }}
+          </h1>
+          <p class="text-muted-foreground mt-1">
+            You have {{ classroomCount }} class{{ classroomCount === 1 ? '' : 'es' }} scheduled for today.
+          </p>
+          <p class="text-xs text-muted-foreground mt-3">{{ currentDate }}</p>
+        </div>
+      </template>
 
-        <!-- Today's Class Attendance -->
-        <Card class="p-5">
-          <CardHeader class="pb-2">
-            <CardTitle class="flex items-center gap-2 text-sm font-semibold">
-              <component :is="CalendarDays" class="w-4 h-4 text-muted-foreground" />
-              Today's Class Attendance
-            </CardTitle>
-          </CardHeader>
-          <CardContent class="flex flex-col gap-4">
-            <div v-if="todayClassAttendance.length === 0" class="text-muted-foreground text-sm text-center py-6">
-              No attendance recorded today.
-            </div>
-            <div v-for="item in todayClassAttendance" :key="item.name" class="flex flex-col gap-2">
-              <div class="flex items-center justify-between text-sm">
-                <span class="font-medium">{{ item.name }}</span>
-                <span class="text-muted-foreground text-xs">
-                  {{ item.present }}/{{ item.total }} ({{ item.rate }}%)
-                </span>
+      <!-- ✅ Admin view -->
+      <template v-else>
+
+        <!-- Top Stats -->
+        <div class="grid grid-cols-2 xl:grid-cols-4 gap-4">
+          <Card v-for="item in statCards" :key="item.label">
+            <CardContent class="flex items-center justify-between p-5">
+              <div class="flex flex-col gap-1">
+                <p class="text-xs text-muted-foreground">{{ item.label }}</p>
+                <p class="text-3xl font-bold">{{ item.value }}</p>
               </div>
-              <div class="w-full bg-muted rounded-full h-2">
-                <div class="h-2 rounded-full bg-primary transition-all duration-500"
-                  :style="{ width: `${item.rate}%` }" />
+              <div :class="`w-11 h-11 rounded-full ${item.bg} flex items-center justify-center shrink-0`">
+                <component :is="item.icon" :class="`w-5 h-5 ${item.color}`" />
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
 
-        <!-- Weekly Attendance Trend -->
-        <Card class="p-5">
-          <CardHeader class="pb-2">
-            <CardTitle class="flex items-center gap-2 text-sm font-semibold">
-              <component :is="TrendingUp" class="w-4 h-4 text-muted-foreground" />
-              Weekly Attendance Trend
-            </CardTitle>
-          </CardHeader>
-          <CardContent class="flex flex-col gap-4">
-            <div v-if="weeklyTrend.length === 0" class="text-muted-foreground text-sm text-center py-6">
-              No data this week.
-            </div>
-            <div v-for="item in weeklyTrend" :key="item.day" class="flex flex-col gap-2">
-              <div class="flex items-center justify-between text-sm">
-                <span class="font-medium">{{ item.day }}</span>
-                <span class="text-muted-foreground text-xs">{{ item.rate }}%</span>
+        <!-- Middle Charts -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          <Card>
+            <CardHeader class="pb-2">
+              <CardTitle class="flex items-center gap-2 text-sm font-semibold">
+                <CalendarDays class="w-4 h-4 text-muted-foreground" />
+                Today's Class Attendance
+              </CardTitle>
+            </CardHeader>
+            <CardContent class="flex flex-col gap-4">
+              <div v-if="!todayClassAttendance?.length" class="text-muted-foreground text-sm text-center py-6">
+                No attendance recorded today.
               </div>
-              <div class="w-full bg-muted rounded-full h-2">
-                <div class="h-2 rounded-full bg-primary transition-all duration-500"
-                  :style="{ width: `${item.rate}%` }" />
+              <div v-for="item in todayClassAttendance" :key="item.name" class="flex flex-col gap-2">
+                <div class="flex items-center justify-between text-sm">
+                  <span class="font-medium">{{ item.name }}</span>
+                  <span class="text-muted-foreground text-xs">
+                    {{ item.present }}/{{ item.total }} ({{ item.rate }}%)
+                  </span>
+                </div>
+                <div class="w-full bg-muted rounded-full h-2">
+                  <div class="h-2 rounded-full bg-primary transition-all duration-500"
+                    :style="{ width: `${item.rate}%` }" />
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-      </div>
+          <Card>
+            <CardHeader class="pb-2">
+              <CardTitle class="flex items-center gap-2 text-sm font-semibold">
+                <TrendingUp class="w-4 h-4 text-muted-foreground" />
+                Weekly Attendance Trend
+              </CardTitle>
+            </CardHeader>
+            <CardContent class="flex flex-col gap-4">
+              <div v-if="!weeklyTrend?.length" class="text-muted-foreground text-sm text-center py-6">
+                No data this week.
+              </div>
+              <div v-for="item in weeklyTrend" :key="item.day" class="flex flex-col gap-2">
+                <div class="flex items-center justify-between text-sm">
+                  <span class="font-medium">{{ item.day }}</span>
+                  <span class="text-muted-foreground text-xs">{{ item.rate }}%</span>
+                </div>
+                <div class="w-full bg-muted rounded-full h-2">
+                  <div class="h-2 rounded-full bg-primary transition-all duration-500"
+                    :style="{ width: `${item.rate}%` }" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-      <!-- Bottom Stats -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        </div>
 
-        <Card>
-          <CardContent class="flex items-center gap-4 p-5">
-            <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center shrink-0">
-              <CheckCircle class="text-green-500 w-5 h-5" />
-            </div>
-            <div>
-              <p class="text-2xl font-bold">{{ bottomStats.studentsPresent.toLocaleString() }}</p>
-              <p class="text-xs text-muted-foreground">Students Present Today</p>
-            </div>
-          </CardContent>
-        </Card>
+        <!-- Bottom Stats -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <Card>
+            <CardContent class="flex items-center gap-4 p-5">
+              <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                <CheckCircle class="text-green-500 w-5 h-5" />
+              </div>
+              <div>
+                <p class="text-2xl font-bold">{{ bottomStats?.studentsPresent.toLocaleString() }}</p>
+                <p class="text-xs text-muted-foreground">Students Present Today</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent class="flex items-center gap-4 p-5">
+              <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                <UserX class="text-red-500 w-5 h-5" />
+              </div>
+              <div>
+                <p class="text-2xl font-bold">{{ bottomStats?.studentsAbsent.toLocaleString() }}</p>
+                <p class="text-xs text-muted-foreground">Students Absent Today</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent class="flex items-center gap-4 p-5">
+              <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+                <GraduationCap class="text-blue-500 w-5 h-5" />
+              </div>
+              <div>
+                <p class="text-2xl font-bold">{{ bottomStats?.teachersActive.toLocaleString() }}</p>
+                <p class="text-xs text-muted-foreground">Teachers Active Today</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
-        <Card>
-          <CardContent class="flex items-center gap-4 p-5">
-            <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center shrink-0">
-              <UserX class="text-red-500 w-5 h-5" />
-            </div>
-            <div>
-              <p class="text-2xl font-bold">{{ bottomStats.studentsAbsent.toLocaleString() }}</p>
-              <p class="text-xs text-muted-foreground">Students Absent Today</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent class="flex items-center gap-4 p-5">
-            <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
-              <GraduationCap class="text-blue-500 w-5 h-5" />
-            </div>
-            <div>
-              <p class="text-2xl font-bold">{{ bottomStats.teachersActive.toLocaleString() }}</p>
-              <p class="text-xs text-muted-foreground">Teachers Active Today</p>
-            </div>
-          </CardContent>
-        </Card>
-
-      </div>
-
+      </template>
     </div>
   </AppLayout>
 </template>
