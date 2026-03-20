@@ -69,28 +69,97 @@ class AttendanceController extends Controller
     /**
      * Display the specified resource.
      */
+    // public function show(Classroom $classroom, Request $request)
+    // {
+    //     abort_if($classroom->teacher_id !== Auth::id(), 403);
+
+    //     $date = $request->query('date', today()->toDateString());
+    //     $students = $classroom->students;
+
+    //     // Get existing attendance for this date
+    //     $attendances = Attendance::where('class_id', $classroom->id)
+    //         ->where('date', $date)
+    //         ->get()
+    //         ->keyBy('student_id');
+
+    //     $attendanceCounts = Attendance::where('class_id', $classroom->id)
+    //         ->selectRaw('student_id,
+    //         COUNT(*) as total,
+    //         SUM(CASE WHEN status = "present" THEN 1 ELSE 0 END) as present,
+    //         SUM(CASE WHEN status = "absent" THEN 1 ELSE 0 END) as absent,
+    //         SUM(CASE WHEN status = "permission" THEN 1 ELSE 0 END) as permission
+    //     ')
+    //         ->groupBy('student_id')
+    //         ->get()
+    //         ->keyBy('student_id');
+
+    //     // Merge attendance status into students
+    //     $students = $students->map(function ($student) use ($attendances) {
+    //         return [
+    //             'id' => $student->id,
+    //             'name' => $student->name,
+    //             'student_code' => $student->student_code,
+    //             'status' => $attendances[$student->id]->status ?? 'present',
+    //             'count' => [
+    //                 'total' => $counts->total ?? 0,
+    //                 'absent' => $counts->absent ?? 0,
+    //                 'permission' => $counts->permission ?? 0,
+    //             ],
+    //         ];
+    //     });
+    //     $alreadyMarked = Attendance::where('class_id', $classroom->id)
+    //         ->where('date', $date)
+    //         ->exists();
+
+    //     return Inertia::render('attendances/show', [
+    //         'classroom' => $classroom,
+    //         'students' => $students,
+    //         'date' => $date,
+    //         'alreadyMarked' => $alreadyMarked,
+    //     ]);
+    // }
     public function show(Classroom $classroom, Request $request)
     {
         abort_if($classroom->teacher_id !== Auth::id(), 403);
 
-        $date = $request->query('date', today()->toDateString());
+        $date = $request->query('date', today()->format('Y-m-d'));
+
         $students = $classroom->students;
 
-        // Get existing attendance for this date
         $attendances = Attendance::where('class_id', $classroom->id)
             ->where('date', $date)
             ->get()
             ->keyBy('student_id');
 
-        // Merge attendance status into students
-        $students = $students->map(function ($student) use ($attendances) {
+        // ✅ Count attendance per student across all dates
+        $attendanceCounts = Attendance::where('class_id', $classroom->id)
+            ->selectRaw('student_id, 
+            COUNT(*) as total,
+            SUM(CASE WHEN status = "present" THEN 1 ELSE 0 END) as present,
+            SUM(CASE WHEN status = "absent" THEN 1 ELSE 0 END) as absent,
+            SUM(CASE WHEN status = "permission" THEN 1 ELSE 0 END) as permission
+        ')
+            ->groupBy('student_id')
+            ->get()
+            ->keyBy('student_id');
+
+        $students = $students->map(function ($student) use ($attendances, $attendanceCounts) {
+            $counts = $attendanceCounts[$student->id] ?? null;
+
             return [
                 'id' => $student->id,
                 'name' => $student->name,
                 'student_code' => $student->student_code,
                 'status' => $attendances[$student->id]->status ?? 'present',
+                'counts' => [                             // ✅
+                    'total' => $counts->total ?? 0,
+                    'present' => $counts->present ?? 0,
+                    'absent' => $counts->absent ?? 0,
+                    'permission' => $counts->permission ?? 0,
+                ],
             ];
         });
+
         $alreadyMarked = Attendance::where('class_id', $classroom->id)
             ->where('date', $date)
             ->exists();

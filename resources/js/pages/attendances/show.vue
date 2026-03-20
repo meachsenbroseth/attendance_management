@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, useForm, usePage } from '@inertiajs/vue3'  
+import { Head, useForm, usePage } from '@inertiajs/vue3'
 import { computed } from 'vue'
 import Button from '@/components/ui/button/Button.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -20,6 +20,12 @@ interface Student {
   name: string
   student_code: string
   status: 'present' | 'absent' | 'permission'
+  counts: {
+    total: number
+    present: number
+    absent: number
+    permission: number
+  }
 }
 
 interface Classroom {
@@ -40,7 +46,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ]
 
 const form = useForm({
-  date: props.date, 
+  date: props.date,
   attendances: props.students.map((student) => ({
     student_id: student.id,
     status: student.status,
@@ -56,6 +62,7 @@ const submit = () => {
 
 <template>
   <AppLayout :breadcrumbs="breadcrumbs">
+
     <Head :title="`Attendance – ${classroom.name}`" />
 
     <div class="flex h-full flex-1 flex-col gap-6 p-4">
@@ -64,7 +71,7 @@ const submit = () => {
           <CardTitle>{{ classroom.name }} — Attendance</CardTitle>
 
           <!-- ✅ Show date as read-only text, no input -->
-          <span class="text-sm text-muted-foreground">📅 {{ date }}</span>
+          <span class="text-sm text-muted-foreground">Date: {{ date }}</span>
         </CardHeader>
 
         <CardContent>
@@ -72,13 +79,13 @@ const submit = () => {
           <!-- Success message -->
           <div v-if="success"
             class="mb-4 flex items-center gap-2 rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
-            ✅ {{ success }}
+            {{ success }}
           </div>
 
           <!-- Already marked warning -->
           <div v-if="alreadyMarked"
             class="mb-4 flex items-center gap-2 rounded-md border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-700">
-            ⚠️ Attendance for this date has already been recorded.
+            Attendance for this date has already been recorded.
           </div>
 
           <div class="border rounded-md">
@@ -88,13 +95,15 @@ const submit = () => {
                   <TableHead class="w-12">#</TableHead>
                   <TableHead>Student</TableHead>
                   <TableHead>Code</TableHead>
+                  <TableHead class="text-center">Absent</TableHead>
+                  <TableHead class="text-center">Permission</TableHead>
                   <TableHead>Status</TableHead>
                 </TableRow>
               </TableHeader>
 
               <TableBody>
                 <TableRow v-if="students.length === 0">
-                  <TableCell colspan="4" class="text-center text-muted-foreground py-10">
+                  <TableCell colspan="6" class="text-center text-muted-foreground py-10">
                     No students in this classroom.
                   </TableCell>
                 </TableRow>
@@ -107,17 +116,32 @@ const submit = () => {
                       {{ student.student_code }}
                     </span>
                   </TableCell>
+                  <TableCell class="text-center">
+                    <span class="font-semibold ">{{ student.counts.absent }}</span>
+                  </TableCell>
+                  <TableCell class="text-center">
+                    <span class="font-semibold ">{{ student.counts.permission }}</span>
+                  </TableCell>
                   <TableCell>
-                    <Select v-model="form.attendances[index].status" :disabled="alreadyMarked">
-                      <SelectTrigger class="w-32" :disabled="alreadyMarked">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="present">✅ Present</SelectItem>
-                        <SelectItem value="absent">❌ Absent</SelectItem>
-                        <SelectItem value="permission">📝 Permission</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <TableCell>
+                      <div class="flex gap-1">
+                        <Button type="button" size="sm"
+                          :variant="form.attendances[index].status === 'present' ? 'default' : 'outline'"
+                          :disabled="alreadyMarked" @click="form.attendances[index].status = 'present'">
+                          Present
+                        </Button>
+                        <Button type="button" size="sm"
+                          :variant="form.attendances[index].status === 'absent' ? 'destructive' : 'outline'"
+                          :disabled="alreadyMarked" @click="form.attendances[index].status = 'absent'">
+                          Absent
+                        </Button>
+                        <Button type="button" size="sm"
+                          :variant="form.attendances[index].status === 'permission' ? 'secondary' : 'outline'"
+                          :disabled="alreadyMarked" @click="form.attendances[index].status = 'permission'">
+                          Permission
+                        </Button>
+                      </div>
+                    </TableCell>
                   </TableCell>
                 </TableRow>
               </TableBody>
