@@ -4,12 +4,16 @@ use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\ClassroomController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UserController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 
-Route::inertia('/', 'Welcome', [
-    'canRegister' => Features::enabled(Features::registration()),
-])->name('home');
+Route::get('/', function () {
+    if (Auth::check()) {
+        return redirect()->route('dashboard');
+    }
+    return redirect()->route('login');
+})->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
