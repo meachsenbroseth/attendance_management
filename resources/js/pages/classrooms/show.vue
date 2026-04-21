@@ -1,24 +1,18 @@
 <script setup lang="ts">
 import { Head, Link, useForm, router } from '@inertiajs/vue3'
+import { ref } from 'vue'
 import InputError from '@/components/InputError.vue'
 import Button from '@/components/ui/button/Button.vue'
 import { Card, CardContent, CardHeader, CardTitle, CardAction } from '@/components/ui/card'
 import Input from '@/components/ui/input/Input.vue'
 import Label from '@/components/ui/label/Label.vue'
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem,
+  SelectTrigger, SelectValue,
 } from '@/components/ui/select'
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell,
+  TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
 import AppLayout from '@/layouts/AppLayout.vue'
 import {
@@ -32,7 +26,6 @@ import {
 } from '@/routes/classrooms/students'
 import type { BreadcrumbItem } from '@/types'
 
-// Types
 interface Teacher {
   id: number
   name: string
@@ -60,6 +53,34 @@ const breadcrumbs: BreadcrumbItem[] = [
   { title: 'Classrooms', href: classroomsIndex() },
   { title: props.classroom.name, href: '#' },
 ]
+
+// ✅ QR modal state
+const showQr = ref(false)
+const qrSrc = ref<string | null>(null)
+const qrLoading = ref(false)
+
+const openQr = async () => {
+  showQr.value = true
+  if (qrSrc.value) return
+
+  qrLoading.value = true
+
+  try {
+    const res = await fetch(`/classrooms/${props.classroom.id}/qrcode`, {
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      credentials: 'same-origin',
+    })
+
+    if (!res.ok) throw new Error('Failed to load QR')
+
+    const data = await res.json()
+    qrSrc.value = data.svg
+  } catch (error) {
+    console.error(error)
+  } finally {
+    qrLoading.value = false
+  }
+}
 
 // Add student form
 const studentForm = useForm({
@@ -120,8 +141,21 @@ const removeStudent = (studentId: number) => {
 
       <!-- Students Card -->
       <Card>
-        <CardHeader>
+        <CardHeader class="flex items-center justify-between">
           <CardTitle>Students</CardTitle>
+          <CardAction>
+            <!-- ✅ QR button in the right place -->
+            <Button variant="outline" size="sm" @click="openQr">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round" class="mr-1.5">
+                <rect x="3" y="3" width="7" height="7" />
+                <rect x="14" y="3" width="7" height="7" />
+                <rect x="3" y="14" width="7" height="7" />
+                <rect x="14" y="14" width="4" height="4" />
+              </svg>
+              QR Code
+            </Button>
+          </CardAction>
         </CardHeader>
 
         <CardContent class="flex flex-col gap-6">
@@ -129,7 +163,6 @@ const removeStudent = (studentId: number) => {
           <!-- Add Student Form -->
           <form @submit.prevent="submitAddStudent" class="border rounded-md p-4 bg-muted/40">
             <div class="grid grid-cols-3 gap-3 items-end w-full">
-              <!-- Student Name -->
               <div class="flex-1">
                 <Label for="student_name">Student Name</Label>
                 <Input id="student_name" type="text" placeholder="Full name" v-model="studentForm.name"
@@ -137,7 +170,6 @@ const removeStudent = (studentId: number) => {
                 <InputError :message="studentForm.errors.name" />
               </div>
 
-              <!-- Gender -->
               <div class="flex-1">
                 <Label for="gender">Gender</Label>
                 <Select v-model="studentForm.gender">
@@ -152,7 +184,6 @@ const removeStudent = (studentId: number) => {
                 <InputError :message="studentForm.errors.gender" />
               </div>
 
-              <!-- Submit -->
               <div class="pt-6">
                 <Button type="submit" :disabled="studentForm.processing">
                   + Add Student
@@ -176,16 +207,15 @@ const removeStudent = (studentId: number) => {
 
               <TableBody>
                 <TableRow v-if="classroom.students.length === 0">
-                  <TableCell colspan="4" class="text-center text-muted-foreground py-10">
+                  <TableCell colspan="5" class="text-center text-muted-foreground py-10">
                     No students in this classroom yet.
                   </TableCell>
                 </TableRow>
 
-                <TableRow v-for="(student, index) in classroom.students" :key="student.id">
-                  <TableCell class="text-muted-foreground">{{ index + 1 }}</TableCell>
+                <TableRow v-for="(student, idx) in classroom.students" :key="student.id">
+                  <TableCell class="text-muted-foreground">{{ idx + 1 }}</TableCell>
                   <TableCell class="font-medium">{{ student.name }}</TableCell>
-                  <TableCell class="font-medium">{{ student.gender }}</TableCell>
-
+                  <TableCell class="capitalize">{{ student.gender }}</TableCell>
                   <TableCell>
                     <span class="font-mono text-sm bg-muted px-2 py-0.5 rounded">
                       {{ student.student_code }}
@@ -206,4 +236,57 @@ const removeStudent = (studentId: number) => {
 
     </div>
   </AppLayout>
+
+  <!-- ✅ QR Modal — outside AppLayout so it overlays everything -->
+  <Teleport to="body">
+    <div v-if="showQr" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      @click.self="showQr = false">
+      <div class="bg-white rounded-2xl p-8 shadow-2xl flex flex-col items-center gap-4 max-w-xs w-full mx-4">
+
+        <div class="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="1.8"
+            stroke-linecap="round">
+            <rect x="3" y="3" width="7" height="7" />
+            <rect x="14" y="3" width="7" height="7" />
+            <rect x="3" y="14" width="7" height="7" />
+            <rect x="14" y="14" width="4" height="4" />
+          </svg>
+        </div>
+
+        <div class="text-center">
+          <h2 class="text-lg font-semibold text-slate-800">Scan to Register</h2>
+          <p class="text-sm text-slate-500 mt-1">
+            Students scan this to join
+            <span class="font-medium text-slate-700">{{ classroom.name }}</span>
+          </p>
+        </div>
+
+        <!-- ✅ Loading state -->
+        <div v-if="qrLoading" class="w-52 h-52 rounded-xl border border-slate-200 bg-slate-50
+                        flex items-center justify-center">
+          <svg class="animate-spin w-6 h-6 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2">
+            <circle cx="12" cy="12" r="10" stroke-opacity="0.25" />
+            <path d="M12 2a10 10 0 0110 10" stroke-linecap="round" />
+          </svg>
+        </div>
+
+        <!-- ✅ QR loads from base64 data URL — no auth issue -->
+        <img v-else-if="qrSrc" :src="qrSrc" alt="QR Code" class="w-52 h-52 rounded-xl border border-slate-200" />
+
+        <div class="flex flex-col gap-2 w-full">
+          <!-- <a v-if="qrSrc" :href="qrSrc" :download="`qrcode-${classroom.name.replace(/\s+/g, '-').toLowerCase()}.svg`"
+            class="w-full">
+            <Button class="w-full" variant="outline">
+              Download QR
+            </Button>
+          </a> -->
+
+          <Button class="w-full" variant="ghost" @click="showQr = false">
+            Close
+          </Button>
+        </div>
+      </div>
+    </div>
+  </Teleport>
 </template>

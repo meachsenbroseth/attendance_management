@@ -3,6 +3,7 @@
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\ClassroomController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\StudentSelfRegisterController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -14,6 +15,16 @@ Route::get('/', function () {
     }
     return redirect()->route('login');
 })->name('home');
+
+
+Route::get('/register/classroom/{classroom}', [StudentSelfRegisterController::class, 'show'])
+    ->name('students.register.show');
+
+Route::post('/register/classroom/{classroom}', [StudentSelfRegisterController::class, 'store'])
+    ->name('students.register.store');
+
+
+
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -34,6 +45,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/classrooms/{classroom}/edit', [ClassroomController::class, 'edit'])->name('classrooms.edit');
     Route::post('/classrooms/{classroom}', [ClassroomController::class, 'update'])->name('classrooms.update');
     Route::delete('/classrooms/{classroom}', [ClassroomController::class, 'destroy'])->name('classrooms.destroy');
+    Route::get('/classrooms/{classroom}/qrcode', [ClassroomController::class, 'qrcode']);
 
     // student
     Route::post('/classrooms/{classroom}/students', [ClassroomController::class, 'addStudent'])->name('classrooms.students.add');

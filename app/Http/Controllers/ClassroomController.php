@@ -5,6 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Classroom;
 use App\Models\Student;
 use App\Models\User;
+use BaconQrCode\Renderer\Image\SvgImageBackEnd;
+use BaconQrCode\Renderer\ImageRenderer;
+use BaconQrCode\Renderer\RendererStyle\RendererStyle;
+use BaconQrCode\Writer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -17,7 +21,7 @@ class ClassroomController extends Controller
     public function index(Request $request)
     {
         abort_unless($request->user()->isAdmin(), 403);
-        
+
         $classrooms = Classroom::with('teacher')->latest()->paginate(10);
 
         return Inertia::render('classrooms/index', [
@@ -64,7 +68,7 @@ class ClassroomController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Request$request,Classroom $classroom)
+    public function show(Request $request, Classroom $classroom)
     {
         abort_unless($request->user()->isAdmin(), 403);
 
@@ -79,7 +83,7 @@ class ClassroomController extends Controller
     /**
      * Show edit form
      */
-    public function edit(Request $request,Classroom $classroom)
+    public function edit(Request $request, Classroom $classroom)
     {
         abort_unless($request->user()->isAdmin(), 403);
 
@@ -94,7 +98,7 @@ class ClassroomController extends Controller
     /**
      * Update class
      */
-    public function update(Request $request, Classroom $classroom)  
+    public function update(Request $request, Classroom $classroom)
     {
         abort_unless($request->user()->isAdmin(), 403);
 
@@ -119,10 +123,10 @@ class ClassroomController extends Controller
     /**
      * Delete class
      */
-    public function destroy(Request $request,Classroom $classroom)
+    public function destroy(Request $request, Classroom $classroom)
     {
         abort_unless($request->user()->isAdmin(), 403);
-        
+
         $classroom->delete();
 
         return redirect()->route('classrooms.index');
@@ -149,7 +153,7 @@ class ClassroomController extends Controller
             ? (int) substr($lastStudent->student_code, -4) + 1
             : 1;
 
-        $code = 'STU-'.$year.'-'.str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+        $code = 'STU-' . $year . '-' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
 
         $classroom->students()->create([
             'name' => $data['name'],
@@ -163,12 +167,35 @@ class ClassroomController extends Controller
     /**
      *  Remove student from class
      */
-    public function removeStudent(Request $request,Student $student)
+    public function removeStudent(Request $request, Student $student)
     {
         abort_unless($request->user()->isAdmin(), 403);
 
         $student->delete();
 
         return back();
+    }
+
+
+
+    //generate qr
+    public function qrcode(Request $request, Classroom $classroom)
+    {
+        abort_unless($request->user()->isAdmin(), 403);
+
+        $url = route('students.register.show', $classroom->id);
+
+        $renderer = new ImageRenderer(
+            new RendererStyle(300),
+            new SvgImageBackEnd()
+        );
+
+        $writer = new Writer($renderer);
+        $svg = $writer->writeString($url);
+
+        // ✅ Return as JSON with base64 so img tag loads correctly
+        return response()->json([
+            'svg' => 'data:image/svg+xml;base64,' . base64_encode($svg),
+        ]);
     }
 }
