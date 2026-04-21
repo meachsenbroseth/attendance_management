@@ -15,9 +15,12 @@
 	import AppLayout from '@/layouts/AppLayout.vue'
 	import { index as usersIndex, store as usersStore } from '@/routes/users'
 	import type { BreadcrumbItem } from '@/types'
+	import { useTranslation } from '@/composables/useTranslation'
+
+	const { t } = useTranslation()
 
 	const breadcrumbs: BreadcrumbItem[] = [
-	  { title: 'Users', href: usersIndex() },
+	  { title: t('users'), href: usersIndex() },
 	]
 
 const roles = ['admin', 'teacher', 'student'] as const
@@ -35,18 +38,18 @@ const submit = () => {
 </script>
 
 <template>
-  <Head title="Create User" />
+  <Head :title="t('create_user')" />
 
   <AppLayout :breadcrumbs="breadcrumbs">
     <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
 
       <Card>
         <CardHeader class="flex items-center justify-between">
-          <CardTitle>Create User</CardTitle>
+          <CardTitle>{{ t('create_user') }}</CardTitle>
 
           <CardAction>
             <Link :href="usersIndex()">
-              <Button>Go back</Button>
+              <Button>{{ t('go_back') }}</Button>
             </Link>
           </CardAction>
         </CardHeader>
@@ -56,7 +59,7 @@ const submit = () => {
 
             <!-- Name -->
             <div class="mt-4">
-              <Label for="name">Name</Label>
+              <Label for="name">{{ t('name') }}</Label>
               <Input
                 id="name"
                 type="text"
@@ -68,7 +71,7 @@ const submit = () => {
 
             <!-- Email -->
             <div class="mt-4">
-              <Label for="email">Email</Label>
+              <Label for="email">{{ t('email') }}</Label>
               <Input
                 id="email"
                 type="email"
@@ -80,7 +83,7 @@ const submit = () => {
 
             <!-- Password -->
             <div class="mt-4">
-              <Label for="password">Password</Label>
+              <Label for="password">{{ t('password') }}</Label>
               <Input
                 id="password"
                 type="password"
@@ -92,11 +95,11 @@ const submit = () => {
 
             <!-- Role -->
             <div class="mt-6">
-              <Label for="role">Role</Label>
+              <Label for="role">{{ t('role') }}</Label>
 
               <Select v-model="form.role">
                 <SelectTrigger id="role" class="w-full" :aria-invalid="!!form.errors.role">
-                  <SelectValue placeholder="Select role" />
+                  <SelectValue :placeholder="t('select_role')" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem v-for="role in roles" :key="role" :value="role">
@@ -111,7 +114,7 @@ const submit = () => {
             <!-- Submit -->
             <div class="flex justify-end">
               <Button size="lg" type="submit" :disabled="form.processing">
-                Create
+                {{ t('create') }}
               </Button>
             </div>
 

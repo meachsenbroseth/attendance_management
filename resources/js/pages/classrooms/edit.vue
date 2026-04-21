@@ -19,6 +19,9 @@ import {
   update as classroomsUpdate,
 } from '@/routes/classrooms/index'
 import type { BreadcrumbItem } from '@/types'
+import { useTranslation } from '@/composables/useTranslation'
+
+const { t } = useTranslation()
 
 interface Teacher {
   id: number
@@ -40,7 +43,7 @@ const props = defineProps<{
 const { classroom, teachers } = toRefs(props)
 
 const breadcrumbs: BreadcrumbItem[] = [
-  { title: 'Classrooms', href: classroomsIndex.url() },
+  { title: t('classrooms'), href: classroomsIndex.url() },
   { title: classroom.value.name, href: '#' },
 ]
 
@@ -72,15 +75,15 @@ const submit = () => {
 
 <template>
   <AppLayout :breadcrumbs="breadcrumbs">
-    <Head title="Edit Classroom" />
+    <Head :title="t('edit_classroom')" />
     <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
 
       <Card>
         <CardHeader class="flex items-center justify-between">
-          <CardTitle>Edit Classroom</CardTitle>
+          <CardTitle>{{ t('edit_classroom') }}</CardTitle>
           <CardAction>
             <Link :href="classroomsIndex.url()">
-              <Button variant="outline">Go back</Button>
+              <Button variant="outline">{{ t('go_back') }}</Button>
             </Link>
           </CardAction>
         </CardHeader>
@@ -90,7 +93,7 @@ const submit = () => {
 
             <!-- Class Name -->
             <div class="mt-4">
-              <Label for="name">Class Name</Label>
+              <Label for="name">{{ t('class_name') }}</Label>
               <Input
                 id="name"
                 type="text"
@@ -102,10 +105,10 @@ const submit = () => {
 
             <!-- Teacher -->
             <div class="mt-6">
-              <Label for="teacher">Assign Teacher</Label>
+              <Label for="teacher">{{ t('assign_teacher') }}</Label>
               <Select v-model="form.teacher_id">
                 <SelectTrigger id="teacher" class="w-full" :aria-invalid="!!form.errors.teacher_id">
-                  <SelectValue placeholder="Select teacher" />
+                  <SelectValue :placeholder="t('select_teacher')" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem
@@ -122,14 +125,14 @@ const submit = () => {
 
             <!-- Image Upload -->
             <div class="mt-6">
-              <Label for="image">Classroom Image</Label>
+              <Label for="image">{{ t('classroom_image') }}</Label>
 
               <!-- Show new preview OR existing image from storage -->
               <div v-if="imagePreview || classroom.image" class="mt-2 mb-3">
                 <img
                   :src="imagePreview ?? `/storage/${classroom.image}`"
                   class="w-32 h-32 object-cover rounded-lg border"
-                  alt="Classroom image"
+                  :alt="t('classroom_image')"
                 />
               </div>
 
@@ -146,7 +149,7 @@ const submit = () => {
             <!-- Submit -->
             <div class="flex justify-end mt-6">
               <Button size="lg" type="submit" :disabled="form.processing">
-                Update Classroom
+                {{ t('update_classroom') }}
               </Button>
             </div>
 

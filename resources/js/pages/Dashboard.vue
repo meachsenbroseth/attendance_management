@@ -6,9 +6,12 @@ import AppLayout from '@/layouts/AppLayout.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { dashboard } from '@/routes'
 import type { BreadcrumbItem, PageProps } from '@/types'
+import { useTranslation } from '@/composables/useTranslation'
+
+const { t } = useTranslation()
 
 const breadcrumbs: BreadcrumbItem[] = [
-  { title: 'Dashboard', href: dashboard() },
+  { title: t('dashboard'), href: dashboard() },
 ]
 
 const page = usePage<PageProps>()
@@ -16,9 +19,9 @@ const userName = computed(() => page.props.auth.user.name)
 
 const greeting = computed(() => {
   const hour = new Date().getHours()
-  if (hour < 12) return 'Good morning'
-  if (hour < 18) return 'Good afternoon'
-  return 'Good evening'
+  if (hour < 12) return t('good_morning')
+  if (hour < 18) return t('good_afternoon')
+  return t('good_evening')
 })
 
 const currentDate = computed(() =>
@@ -69,28 +72,28 @@ const statCards = computed(() => {
   if (!props.stats) return []
   return [
     {
-      label: 'Total Teachers',
+      label: t('total_teachers'),
       value: props.stats.totalTeachers.toLocaleString(),
       icon: GraduationCap,
       bg: 'bg-blue-100',
       color: 'text-blue-500',
     },
     {
-      label: 'Total Students',
+      label: t('total_students'),
       value: props.stats.totalStudents.toLocaleString(),
       icon: BookOpen,
       bg: 'bg-green-100',
       color: 'text-green-500',
     },
     {
-      label: 'Total Classrooms',
+      label: t('total_classrooms'),
       value: props.stats.totalClassrooms.toLocaleString(),
       icon: School,
       bg: 'bg-orange-100',
       color: 'text-orange-500',
     },
     {
-      label: "Today's Attendance Rate",
+      label: t('attendance_rate'),
       value: `${props.stats.todayRate}%`,
       icon: CheckCircle,
       bg: 'bg-teal-100',
@@ -101,7 +104,7 @@ const statCards = computed(() => {
 </script>
 
 <template>
-  <Head title="Dashboard" />
+  <Head :title="t('dashboard')" />
 
   <AppLayout :breadcrumbs="breadcrumbs">
     <div class="p-6 flex flex-col gap-6">
@@ -110,13 +113,13 @@ const statCards = computed(() => {
       <template v-if="role === 'teacher'">
         <div class="rounded-xl bg-accent/40 border px-6 py-8">
           <p class="text-xs font-semibold uppercase tracking-widest text-primary mb-1">
-            Teacher Portal
+            {{ t('teacher_portal') }}
           </p>
           <h1 class="text-3xl font-bold text-foreground">
             {{ greeting }}, {{ userName }}
           </h1>
           <p class="text-muted-foreground mt-1">
-            You have {{ classroomCount }} class{{ classroomCount === 1 ? '' : 'es' }} scheduled for today.
+            {{ t('classes_scheduled_today', { count: String(classroomCount ?? 0) }) }}
           </p>
           <p class="text-xs text-muted-foreground mt-3">{{ currentDate }}</p>
         </div>
@@ -147,12 +150,12 @@ const statCards = computed(() => {
             <CardHeader class="pb-2">
               <CardTitle class="flex items-center gap-2 text-sm font-semibold">
                 <CalendarDays class="w-4 h-4 text-muted-foreground" />
-                Today's Class Attendance
+                {{ t('today_class_attendance') }}
               </CardTitle>
             </CardHeader>
             <CardContent class="flex flex-col gap-4">
               <div v-if="!todayClassAttendance?.length" class="text-muted-foreground text-sm text-center py-6">
-                No attendance recorded today.
+                {{ t('no_attendance_today') }}
               </div>
               <div v-for="item in todayClassAttendance" :key="item.name" class="flex flex-col gap-2">
                 <div class="flex items-center justify-between text-sm">
@@ -173,12 +176,12 @@ const statCards = computed(() => {
             <CardHeader class="pb-2">
               <CardTitle class="flex items-center gap-2 text-sm font-semibold">
                 <TrendingUp class="w-4 h-4 text-muted-foreground" />
-                Weekly Attendance Trend
+                {{ t('weekly_attendance_trend') }}
               </CardTitle>
             </CardHeader>
             <CardContent class="flex flex-col gap-4">
               <div v-if="!weeklyTrend?.length" class="text-muted-foreground text-sm text-center py-6">
-                No data this week.
+                {{ t('no_data_this_week') }}
               </div>
               <div v-for="item in weeklyTrend" :key="item.day" class="flex flex-col gap-2">
                 <div class="flex items-center justify-between text-sm">
@@ -204,7 +207,7 @@ const statCards = computed(() => {
               </div>
               <div>
                 <p class="text-2xl font-bold">{{ bottomStats?.studentsPresent.toLocaleString() }}</p>
-                <p class="text-xs text-muted-foreground">Students Present Today</p>
+                <p class="text-xs text-muted-foreground">{{ t('students_present_today') }}</p>
               </div>
             </CardContent>
           </Card>
@@ -215,7 +218,7 @@ const statCards = computed(() => {
               </div>
               <div>
                 <p class="text-2xl font-bold">{{ bottomStats?.studentsAbsent.toLocaleString() }}</p>
-                <p class="text-xs text-muted-foreground">Students Absent Today</p>
+                <p class="text-xs text-muted-foreground">{{ t('students_absent_today') }}</p>
               </div>
             </CardContent>
           </Card>
@@ -226,7 +229,7 @@ const statCards = computed(() => {
               </div>
               <div>
                 <p class="text-2xl font-bold">{{ bottomStats?.teachersActive.toLocaleString() }}</p>
-                <p class="text-xs text-muted-foreground">Teachers Active Today</p>
+                <p class="text-xs text-muted-foreground">{{ t('teachers_active_today') }}</p>
               </div>
             </CardContent>
           </Card>

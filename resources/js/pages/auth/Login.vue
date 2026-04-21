@@ -10,16 +10,19 @@ import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
+import { useTranslation } from '@/composables/useTranslation';
 
 defineProps<{
     status?: string;
     canResetPassword: boolean;
     canRegister: boolean;
 }>();
+
+const { t } = useTranslation();
 </script>
 
 <template>
-    <Head title="Sign in" />
+    <Head :title="t('sign_in')" />
 
     <div class="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-white font-sans selection:bg-indigo-100 selection:text-indigo-900">
 
@@ -41,8 +44,8 @@ defineProps<{
                 </div>
 
                 <div class="mb-8">
-                    <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Sign in</h1>
-                    <p class="text-[15px] text-slate-500 mt-2">Enter your credentials to continue</p>
+                    <h1 class="text-3xl font-bold text-slate-900 tracking-tight">{{ t('sign_in') }}</h1>
+                    <p class="text-[15px] text-slate-500 mt-2">{{ t('credentials') }}</p>
                 </div>
 
                 <div v-if="status"
@@ -59,7 +62,7 @@ defineProps<{
                 >
                     <div class="flex flex-col gap-2">
                         <Label for="email" class="text-[13px] font-semibold text-slate-700">
-                            Email address
+                            {{ t('email') }}
                         </Label>
                         <Input
                             id="email"
@@ -80,7 +83,7 @@ defineProps<{
                     <div class="flex flex-col gap-2">
                         <div class="flex items-center justify-between">
                             <Label for="password" class="text-[13px] font-semibold text-slate-700">
-                                Password
+                                {{ t('password') }}
                             </Label>
                             <TextLink
                                 v-if="canResetPassword"
@@ -88,7 +91,7 @@ defineProps<{
                                 :tabindex="5"
                                 class="text-[13px] font-semibold text-indigo-600 hover:text-indigo-700 transition-colors"
                             >
-                                Forgot password?
+                                {{ t('forgot_password') }}
                             </TextLink>
                         </div>
                         <PasswordInput
@@ -113,7 +116,7 @@ defineProps<{
                                    data-[state=checked]:border-indigo-600 text-white transition-all shadow-sm"
                         />
                         <Label for="remember" class="text-[14px] text-slate-600 font-medium cursor-pointer select-none">
-                            Remember me for 30 days
+                            {{ t('remember_me') }}
                         </Label>
                     </div>
 
@@ -133,7 +136,7 @@ defineProps<{
                             <polyline points="10 17 15 12 10 7"/>
                             <line x1="15" y1="12" x2="3" y2="12"/>
                         </svg>
-                        {{ processing ? 'Signing in...' : 'Sign in' }}
+                        {{ processing ? t('signing_in') : t('sign_in') }}
                     </Button>
                 </Form>
             </div>

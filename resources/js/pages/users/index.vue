@@ -13,10 +13,13 @@
 	import AppLayout from '@/layouts/AppLayout.vue';
 	import { create as usersCreate, edit, index as usersIndex } from '@/routes/users';
 	import type { BreadcrumbItem } from '@/types';
+	import { useTranslation } from '@/composables/useTranslation'
+
+	const { t } = useTranslation()
 
 	const breadcrumbs: BreadcrumbItem[] = [
 	    {
-	        title: 'Users',
+	        title: t('users'),
 	        href: usersIndex(),
 	    },
 	];
@@ -40,7 +43,7 @@ interface PaginationLink {
 	}
 
 const deleteUser = (id: number) => {
-  if (confirm('Are you sure you want to delete this user?')) {
+  if (confirm(t('confirm_delete_user'))) {
     // Wayfinder actions return an object with { url, method }
     router.visit(destroy(id));
   }
@@ -58,26 +61,26 @@ defineProps<{
 
 <template>
 
-  <Head title="User" />
+  <Head :title="t('users')" />
 
   <AppLayout :breadcrumbs="breadcrumbs">
     <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
       <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold">Users</h1>
+        <h1 class="text-2xl font-bold">{{ t('users') }}</h1>
 
         <Button as-child>
-          <Link :href="usersCreate()">Add User</Link>
+          <Link :href="usersCreate()">{{ t('add_user') }}</Link>
         </Button>
       </div>
       <div class="border rounded-md">
         <Table class="w-full">
           <TableHeader class=" bg-secondary">
             <TableRow>
-              <TableHead>Id</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead class="text-right">Action</TableHead>
+              <TableHead>{{ t('id') }}</TableHead>
+              <TableHead>{{ t('name') }}</TableHead>
+              <TableHead>{{ t('email') }}</TableHead>
+              <TableHead>{{ t('role') }}</TableHead>
+              <TableHead class="text-right">{{ t('action') }}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -89,9 +92,9 @@ defineProps<{
 
               <TableCell class="text-right">
                 <div class="flex justify-end gap-2">
-                  <Button variant="outline" size="sm" @click="editUser(user.id)">Edit</Button>
+                  <Button variant="outline" size="sm" @click="editUser(user.id)">{{ t('edit') }}</Button>
                   <Button variant="destructive" size="sm" @click="deleteUser(user.id)">
-                    Delete
+                    {{ t('delete') }}
                   </Button>
                 </div>
               </TableCell>

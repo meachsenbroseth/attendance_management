@@ -7,24 +7,29 @@ use App\Http\Controllers\StudentSelfRegisterController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use Laravel\Fortify\Features;
 
 Route::get('/', function () {
     if (Auth::check()) {
         return redirect()->route('dashboard');
     }
+
     return redirect()->route('login');
 })->name('home');
 
+Route::post('/language/{locale}', function (string $locale) {
+    abort_unless(in_array($locale, ['en', 'km'], true), 400);
+
+    session()->put('locale', $locale);
+    session()->save();
+
+    return back(303);
+})->name('language.switch');
 
 Route::get('/register/classroom/{classroom}', [StudentSelfRegisterController::class, 'show'])
     ->name('students.register.show');
 
 Route::post('/register/classroom/{classroom}', [StudentSelfRegisterController::class, 'store'])
     ->name('students.register.store');
-
-
-
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');

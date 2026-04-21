@@ -2,7 +2,9 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Classroom;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Lang;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -35,17 +37,31 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+
+        $user = $request->user();
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
-                'user' => $request->user(),
+                'user' => $user,
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
-            'flash' => [    
+            'flash' => [
                 'success' => session('success'),
                 'error' => session('error'),
             ],
+
+            // ✅ i18n
+            'locale' => app()->getLocale(),
+            'translations' => fn (): array => Lang::get('app'),
+
+            // ✅ Teacher's assigned classroom for sidebar link
+            'teacherClassroom' => $user?->role === 'teacher'
+                ? Classroom::where('teacher_id', $user->id)
+                    ->select('id', 'name')
+                    ->first()
+                : null,
         ];
     }
 }

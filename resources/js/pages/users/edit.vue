@@ -15,6 +15,9 @@
 	import AppLayout from '@/layouts/AppLayout.vue'
 	import { index as usersIndex, update as usersUpdate } from '@/routes/users'
 	import type { BreadcrumbItem } from '@/types'
+	import { useTranslation } from '@/composables/useTranslation'
+
+	const { t } = useTranslation()
 
 interface User {
   id: number
@@ -28,7 +31,7 @@ const props = defineProps<{
 }>()
 
 const breadcrumbs: BreadcrumbItem[] = [
-  { title: 'Users', href: usersIndex() },
+  { title: t('users'), href: usersIndex() },
 ]
 
 const roles = ['admin', 'teacher', 'student'] as const
@@ -49,18 +52,18 @@ const submit = () => {
 
 <template>
 
-  <Head title="Edit User" />
+  <Head :title="t('edit_user')" />
 
   <AppLayout :breadcrumbs="breadcrumbs">
     <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
 
       <Card>
         <CardHeader class="flex items-center justify-between">
-          <CardTitle>Edit User</CardTitle>
+          <CardTitle>{{ t('edit_user') }}</CardTitle>
 
           <CardAction>
             <Link :href="usersIndex()">
-              <Button>Go back</Button>
+              <Button>{{ t('go_back') }}</Button>
             </Link>
           </CardAction>
         </CardHeader>
@@ -70,28 +73,28 @@ const submit = () => {
 
             <!-- Name -->
             <div class="mt-4">
-              <Label for="name">Name</Label>
+              <Label for="name">{{ t('name') }}</Label>
               <Input id="name" type="text" v-model="form.name" />
               <InputError :message="form.errors.name" />
             </div>
 
             <!-- Email -->
             <div class="mt-4">
-              <Label for="email">Email</Label>
+              <Label for="email">{{ t('email') }}</Label>
               <Input id="email" type="email" v-model="form.email" />
               <InputError :message="form.errors.email" />
             </div>
 
             <!-- Password -->
             <div class="mt-4">
-              <Label for="password">Password (leave blank to keep)</Label>
+              <Label for="password">{{ t('password_leave_blank') }}</Label>
               <Input id="password" type="password" v-model="form.password" />
               <InputError :message="form.errors.password" />
             </div>
 
             <!-- Role -->
             <div class="mt-6">
-              <Label for="role">Role</Label>
+              <Label for="role">{{ t('role') }}</Label>
 
               <Select v-model="form.role">
                 <SelectTrigger id="role" class="w-full">
@@ -110,7 +113,7 @@ const submit = () => {
             <!-- Submit -->
             <div class="flex justify-end">
               <Button size="lg" type="submit" :disabled="form.processing">
-                Update
+                {{ t('update') }}
               </Button>
             </div>
 

@@ -17,6 +17,9 @@ export interface PageProps extends Record<string, unknown> {  // ✅ extend Reco
       role: string
     }
   }
+  locale: string
+  translations: Record<string, string>
+  teacherClassroom?: { id: number; name: string } | null
 }
 
 export type InertiaPage<TProps extends PageProps = PageProps> = Page<TProps>

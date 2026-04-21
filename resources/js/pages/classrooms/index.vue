@@ -21,10 +21,13 @@ import {
 } from '@/routes/classrooms/index'
 
 import type { BreadcrumbItem } from '@/types'
+import { useTranslation } from '@/composables/useTranslation'
+const { t } = useTranslation()
+
 
 const breadcrumbs: BreadcrumbItem[] = [
-  { title: 'Dashboard', href: dashboard() },
-  { title: 'Classrooms', href: classroomsIndex() }
+  { title: t('dashboard'), href: dashboard() },
+  { title: t('classrooms'), href: classroomsIndex() }
 ]
 
 // Types
@@ -54,7 +57,7 @@ const editClassroom = (id: number) => {
 }
 
 const deleteClassroom = (id: number) => {
-  if (confirm('Delete this classroom?')) {
+  if (confirm(t('confirm_delete'))) {
     router.visit(classroomsDestroy(id))
   }
 }
@@ -62,17 +65,17 @@ const deleteClassroom = (id: number) => {
 
 <template>
 
-  <Head title="Classrooms" />
+  <Head :title="t('classrooms')" />
 
   <AppLayout :breadcrumbs="breadcrumbs">
     <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
 
       <!-- Header -->
       <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold">Classrooms</h1>
+        <h1 class="text-2xl font-bold">{{ t('classrooms') }}</h1>
 
         <Button as-child>
-          <Link v-if="$page.props.auth.user.role === 'admin'" :href="classroomsCreate()">Add Classroom</Link>
+          <Link v-if="$page.props.auth.user.role === 'admin'" :href="classroomsCreate()">{{ t('create_classroom') }}</Link>
         </Button>
       </div>
 
@@ -81,10 +84,10 @@ const deleteClassroom = (id: number) => {
         <Table class="w-full">
           <TableHeader class="bg-secondary">
             <TableRow>
-              <TableHead>Id</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Teacher</TableHead>
-              <TableHead class="text-right">Action</TableHead>
+              <TableHead>{{ t('id') }}</TableHead>
+              <TableHead>{{ t('name') }}</TableHead>
+              <TableHead>{{ t('teacher') }}</TableHead>
+              <TableHead class="text-right">{{ t('action') }}</TableHead>
             </TableRow>
           </TableHeader>
 
@@ -101,7 +104,7 @@ const deleteClassroom = (id: number) => {
 
               <TableCell>
                 <span class="text-muted-foreground">
-                  {{ classroom.teacher?.name ?? 'No teacher' }}
+                  {{ classroom.teacher?.name ?? t('no_teacher') }}
                 </span>
               </TableCell>
 
@@ -110,20 +113,20 @@ const deleteClassroom = (id: number) => {
 
                   <!-- 👁 View (Primary) -->
                   <Button size="sm" @click="router.visit(classroomsShow(classroom.id))">
-                    View
+                    {{ t('view') }}
                   </Button>
 
                   <!-- ✏️ Edit (only admin or owner) -->
                   <Button
                     v-if="$page.props.auth.user.role === 'admin'"
                     variant="outline" size="sm" @click="editClassroom(classroom.id)">
-                    Edit
+                    {{ t('edit') }}
                   </Button>
 
                   <!-- 🗑 Delete (admin only) -->
                   <Button v-if="$page.props.auth.user.role === 'admin'" variant="destructive" size="sm"
                     @click="deleteClassroom(classroom.id)">
-                    Delete
+                    {{ t('delete') }}
                   </Button>
 
                 </div>

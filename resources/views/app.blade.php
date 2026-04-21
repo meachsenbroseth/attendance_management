@@ -28,6 +28,10 @@
             html.dark {
                 background-color: oklch(0.145 0 0);
             }
+
+            .font-khmer {
+                font-family: "Noto Sans Khmer", "Khmer OS", "Leelawadee UI", sans-serif;
+            }
         </style>
 
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
@@ -37,7 +41,7 @@
         <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
         <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
+        <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600|noto-sans-khmer:400,500,600" rel="stylesheet" />
 
         @vite(['resources/js/app.ts', "resources/js/pages/{$page['component']}.vue"])
         @inertiaHead

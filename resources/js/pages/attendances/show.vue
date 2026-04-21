@@ -14,6 +14,9 @@ import {
 import AppLayout from '@/layouts/AppLayout.vue'
 import { index as attendancesIndex, store as attendancesStore } from '@/routes/attendances'
 import type { BreadcrumbItem, PageProps } from '@/types'
+import { useTranslation } from '@/composables/useTranslation'
+
+const { t } = useTranslation()
 
 interface Student {
   id: number
@@ -41,7 +44,7 @@ const props = defineProps<{
 }>()
 
 const breadcrumbs: BreadcrumbItem[] = [
-  { title: 'Attendances', href: attendancesIndex.url() },
+  { title: t('attendances'), href: attendancesIndex.url() },
   { title: props.classroom.name, href: '#' },
 ]
 
@@ -63,15 +66,15 @@ const submit = () => {
 <template>
   <AppLayout :breadcrumbs="breadcrumbs">
 
-    <Head :title="`Attendance – ${classroom.name}`" />
+    <Head :title="`${t('attendances')} - ${classroom.name}`" />
 
     <div class="flex h-full flex-1 flex-col gap-6 p-4">
       <Card>
         <CardHeader class="flex items-center justify-between">
-          <CardTitle>{{ classroom.name }} — Attendance</CardTitle>
+          <CardTitle>{{ classroom.name }} - {{ t('attendances') }}</CardTitle>
 
           <!-- ✅ Show date as read-only text, no input -->
-          <span class="text-sm text-muted-foreground">Date: {{ date }}</span>
+          <span class="text-sm text-muted-foreground">{{ t('date') }}: {{ date }}</span>
         </CardHeader>
 
         <CardContent>
@@ -85,7 +88,7 @@ const submit = () => {
           <!-- Already marked warning -->
           <div v-if="alreadyMarked"
             class="mb-4 flex items-center gap-2 rounded-md border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-700">
-            Attendance for this date has already been recorded.
+            {{ t('attendance_already_recorded') }}
           </div>
 
           <div class="border rounded-md">
@@ -93,18 +96,18 @@ const submit = () => {
               <TableHeader class="bg-secondary">
                 <TableRow>
                   <TableHead class="w-12">#</TableHead>
-                  <TableHead>Student</TableHead>
-                  <TableHead>Code</TableHead>
-                  <TableHead class="text-center">Absent</TableHead>
-                  <TableHead class="text-center">Permission</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead>{{ t('students') }}</TableHead>
+                  <TableHead>{{ t('student_code') }}</TableHead>
+                  <TableHead class="text-center">{{ t('absent') }}</TableHead>
+                  <TableHead class="text-center">{{ t('permission') }}</TableHead>
+                  <TableHead>{{ t('status') }}</TableHead>
                 </TableRow>
               </TableHeader>
 
               <TableBody>
                 <TableRow v-if="students.length === 0">
                   <TableCell colspan="6" class="text-center text-muted-foreground py-10">
-                    No students in this classroom.
+                    {{ t('no_students_in_classroom') }}
                   </TableCell>
                 </TableRow>
 
@@ -128,17 +131,17 @@ const submit = () => {
                         <Button type="button" size="sm"
                           :variant="form.attendances[index].status === 'present' ? 'default' : 'outline'"
                           :disabled="alreadyMarked" @click="form.attendances[index].status = 'present'">
-                          Present
+                          {{ t('present') }}
                         </Button>
                         <Button type="button" size="sm"
                           :variant="form.attendances[index].status === 'absent' ? 'destructive' : 'outline'"
                           :disabled="alreadyMarked" @click="form.attendances[index].status = 'absent'">
-                          Absent
+                          {{ t('absent') }}
                         </Button>
                         <Button type="button" size="sm"
                           :variant="form.attendances[index].status === 'permission' ? 'secondary' : 'outline'"
                           :disabled="alreadyMarked" @click="form.attendances[index].status = 'permission'">
-                          Permission
+                          {{ t('permission') }}
                         </Button>
                       </div>
                     </TableCell>
@@ -151,7 +154,7 @@ const submit = () => {
           <!-- Save -->
           <div class="flex justify-end mt-6">
             <Button size="lg" @click="submit" :disabled="form.processing || alreadyMarked">
-              Save Attendance
+              {{ t('save_attendance') }}
             </Button>
           </div>
 

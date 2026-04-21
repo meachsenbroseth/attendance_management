@@ -17,40 +17,42 @@ import {
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import type { NavItem, PageProps } from '@/types';
+import LanguageSwitcher from './LanguageSwitcher.vue';
+import { useTranslation } from '@/composables/useTranslation';
 
 const page = usePage<PageProps>();
 const role = computed(() => page.props.auth.user.role); // 'admin' | 'teacher'
+const { t } = useTranslation();
 
-const allNavItems: (NavItem & { roles?: string[] })[] = [
-    {
-        title: 'Dashboard',
-        href: dashboard(),
-        icon: LayoutGrid,
-        // no roles = visible to everyone
-    },
-    {
-        title: 'Classrooms',
-        href: '/classrooms',
-        icon: UniversityIcon,
-        roles: ['admin','teacher'],           // ✅ admin only
-    },
-    {
-        title: 'Attendances',
-        href: '/attendances',
-        icon: NotebookPen,
-        roles: ['admin', 'teacher'], // ✅ both can see
-    },
-    {
-        title: 'Users',
-        href: '/users',
-        icon: User2Icon,
-        roles: ['admin'],           // ✅ admin only
-    },
-];
+const mainNavItems = computed(() => {
+    const allNavItems: (NavItem & { roles?: string[] })[] = [
+        {
+            title: t('dashboard'),
+            href: dashboard(),
+            icon: LayoutGrid,
+        },
+        {
+            title: t('classrooms'),
+            href: '/classrooms',
+            icon: UniversityIcon,
+            roles: ['admin', 'teacher'],
+        },
+        {
+            title: t('attendances'),
+            href: '/attendances',
+            icon: NotebookPen,
+            roles: ['admin', 'teacher'],
+        },
+        {
+            title: t('users'),
+            href: '/users',
+            icon: User2Icon,
+            roles: ['admin'],
+        },
+    ];
 
-const mainNavItems = computed(() =>
-    allNavItems.filter((item) => !item.roles || item.roles.includes(role.value)),
-);
+    return allNavItems.filter((item) => !item.roles || item.roles.includes(role.value));
+});
 
 const footerNavItems: NavItem[] = [
     // {
@@ -85,6 +87,9 @@ const footerNavItems: NavItem[] = [
         </SidebarContent>
 
         <SidebarFooter>
+            <div class="px-2 pb-1">
+                <LanguageSwitcher />
+            </div>
             <NavFooter :items="footerNavItems" />
             <NavUser />
         </SidebarFooter>

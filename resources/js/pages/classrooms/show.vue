@@ -25,6 +25,9 @@ import {
   remove as classroomsStudentsRemove,
 } from '@/routes/classrooms/students'
 import type { BreadcrumbItem } from '@/types'
+import { useTranslation } from '@/composables/useTranslation'
+
+const { t } = useTranslation()
 
 interface Teacher {
   id: number
@@ -50,7 +53,7 @@ const props = defineProps<{
 }>()
 
 const breadcrumbs: BreadcrumbItem[] = [
-  { title: 'Classrooms', href: classroomsIndex() },
+  { title: t('classrooms'), href: classroomsIndex() },
   { title: props.classroom.name, href: '#' },
 ]
 
@@ -71,7 +74,7 @@ const openQr = async () => {
       credentials: 'same-origin',
     })
 
-    if (!res.ok) throw new Error('Failed to load QR')
+    if (!res.ok) throw new Error(t('failed_load_qr'))
 
     const data = await res.json()
     qrSrc.value = data.svg
@@ -96,7 +99,7 @@ const submitAddStudent = () => {
 
 // Remove student
 const removeStudent = (studentId: number) => {
-  if (confirm('Remove this student from the classroom?')) {
+  if (confirm(t('confirm_remove'))) {
     router.delete(classroomsStudentsRemove.url(studentId))
   }
 }
@@ -116,10 +119,10 @@ const removeStudent = (studentId: number) => {
           <CardAction>
             <div class="flex gap-2">
               <Link :href="index()">
-                <Button size="sm">Back</Button>
+                <Button size="sm">{{ t('back') }}</Button>
               </Link>
               <Link v-if="$page.props.auth.user.role === 'admin'" :href="classroomsEdit(classroom.id)">
-                <Button variant="outline" size="sm">Edit Classroom</Button>
+                <Button variant="outline" size="sm">{{ t('edit_classroom') }}</Button>
               </Link>
             </div>
           </CardAction>
@@ -128,11 +131,11 @@ const removeStudent = (studentId: number) => {
         <CardContent>
           <div class="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <p class="text-muted-foreground">Teacher</p>
+              <p class="text-muted-foreground">{{ t('teacher') }}</p>
               <p class="font-medium">{{ classroom.teacher?.name ?? '—' }}</p>
             </div>
             <div>
-              <p class="text-muted-foreground">Total Students</p>
+              <p class="text-muted-foreground">{{ t('total_students') }}</p>
               <p class="font-medium">{{ classroom.students.length }}</p>
             </div>
           </div>
@@ -142,7 +145,7 @@ const removeStudent = (studentId: number) => {
       <!-- Students Card -->
       <Card>
         <CardHeader class="flex items-center justify-between">
-          <CardTitle>Students</CardTitle>
+          <CardTitle>{{ t('students') }}</CardTitle>
           <CardAction>
             <!-- ✅ QR button in the right place -->
             <Button variant="outline" size="sm" @click="openQr">
@@ -153,7 +156,7 @@ const removeStudent = (studentId: number) => {
                 <rect x="3" y="14" width="7" height="7" />
                 <rect x="14" y="14" width="4" height="4" />
               </svg>
-              QR Code
+              {{ t('qr_code') }}
             </Button>
           </CardAction>
         </CardHeader>
@@ -164,21 +167,21 @@ const removeStudent = (studentId: number) => {
           <form @submit.prevent="submitAddStudent" class="border rounded-md p-4 bg-muted/40">
             <div class="grid grid-cols-3 gap-3 items-end w-full">
               <div class="flex-1">
-                <Label for="student_name">Student Name</Label>
-                <Input id="student_name" type="text" placeholder="Full name" v-model="studentForm.name"
+                <Label for="student_name">{{ t('student_name') }}</Label>
+                <Input id="student_name" type="text" :placeholder="t('full_name')" v-model="studentForm.name"
                   :aria-invalid="!!studentForm.errors.name" />
                 <InputError :message="studentForm.errors.name" />
               </div>
 
               <div class="flex-1">
-                <Label for="gender">Gender</Label>
+                <Label for="gender">{{ t('gender') }}</Label>
                 <Select v-model="studentForm.gender">
                   <SelectTrigger id="gender" class="w-full" :aria-invalid="!!studentForm.errors.gender">
-                    <SelectValue placeholder="Select gender" />
+                    <SelectValue :placeholder="t('select_gender')" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="male">Male</SelectItem>
-                    <SelectItem value="female">Female</SelectItem>
+                    <SelectItem value="male">{{ t('male') }}</SelectItem>
+                    <SelectItem value="female">{{ t('female') }}</SelectItem>
                   </SelectContent>
                 </Select>
                 <InputError :message="studentForm.errors.gender" />
@@ -186,7 +189,7 @@ const removeStudent = (studentId: number) => {
 
               <div class="pt-6">
                 <Button type="submit" :disabled="studentForm.processing">
-                  + Add Student
+                  + {{ t('add_student') }}
                 </Button>
               </div>
             </div>
@@ -198,17 +201,17 @@ const removeStudent = (studentId: number) => {
               <TableHeader class="bg-secondary">
                 <TableRow>
                   <TableHead class="w-12">#</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Gender</TableHead>
-                  <TableHead>Student Code</TableHead>
-                  <TableHead class="text-right">Action</TableHead>
+                  <TableHead>{{ t('name') }}</TableHead>
+                  <TableHead>{{ t('gender') }}</TableHead>
+                  <TableHead>{{ t('student_code') }}</TableHead>
+                  <TableHead class="text-right">{{ t('action') }}</TableHead>
                 </TableRow>
               </TableHeader>
 
               <TableBody>
                 <TableRow v-if="classroom.students.length === 0">
                   <TableCell colspan="5" class="text-center text-muted-foreground py-10">
-                    No students in this classroom yet.
+                    {{ t('no_students') }}
                   </TableCell>
                 </TableRow>
 
@@ -223,7 +226,7 @@ const removeStudent = (studentId: number) => {
                   </TableCell>
                   <TableCell class="text-right">
                     <Button variant="destructive" size="sm" @click="removeStudent(student.id)">
-                      Remove
+                      {{ t('remove') }}
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -254,9 +257,9 @@ const removeStudent = (studentId: number) => {
         </div>
 
         <div class="text-center">
-          <h2 class="text-lg font-semibold text-slate-800">Scan to Register</h2>
+          <h2 class="text-lg font-semibold text-slate-800">{{ t('scan_to_register') }}</h2>
           <p class="text-sm text-slate-500 mt-1">
-            Students scan this to join
+            {{ t('scan_join') }}
             <span class="font-medium text-slate-700">{{ classroom.name }}</span>
           </p>
         </div>
@@ -272,7 +275,7 @@ const removeStudent = (studentId: number) => {
         </div>
 
         <!-- ✅ QR loads from base64 data URL — no auth issue -->
-        <img v-else-if="qrSrc" :src="qrSrc" alt="QR Code" class="w-52 h-52 rounded-xl border border-slate-200" />
+        <img v-else-if="qrSrc" :src="qrSrc" :alt="t('qr_code')" class="w-52 h-52 rounded-xl border border-slate-200" />
 
         <div class="flex flex-col gap-2 w-full">
           <!-- <a v-if="qrSrc" :href="qrSrc" :download="`qrcode-${classroom.name.replace(/\s+/g, '-').toLowerCase()}.svg`"
@@ -283,7 +286,7 @@ const removeStudent = (studentId: number) => {
           </a> -->
 
           <Button class="w-full" variant="ghost" @click="showQr = false">
-            Close
+            {{ t('close') }}
           </Button>
         </div>
       </div>

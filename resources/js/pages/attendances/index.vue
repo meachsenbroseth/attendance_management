@@ -4,7 +4,9 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { index as attendancesIndex, show as attendancesShow } from '@/routes/attendances'
 import { Card } from '@/components/ui/card';
 import type { BreadcrumbItem } from '@/types';
+import { useTranslation } from '@/composables/useTranslation'
 
+const { t } = useTranslation()
 
 interface Classroom {
   id: number
@@ -17,24 +19,24 @@ defineProps<{
 }>()
 
 const breadcrumbs: BreadcrumbItem[] = [
-  { title: 'Attendances', href: attendancesIndex.url() },
+  { title: t('attendances'), href: attendancesIndex.url() },
 ]
 </script>
 
 
 <template>
 
-  <Head title="Attendances" />
+  <Head :title="t('attendances')" />
 
   <AppLayout :breadcrumbs="breadcrumbs">
     <div class="flex h-full flex-1 flex-col gap-4 p-4">
 
       <div class="flex justify-between items-center">
-        <h1 class="text-2xl font-bold">My Classrooms</h1>
+        <h1 class="text-2xl font-bold">{{ t('my_classroom') }}</h1>
       </div>
 
       <div v-if="classrooms.length === 0" class="text-muted-foreground text-center py-20">
-        You have no classrooms assigned.
+        {{ t('no_classrooms_assigned') }}
       </div>
 
       <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -47,7 +49,7 @@ const breadcrumbs: BreadcrumbItem[] = [
               class="w-full h-full object-contain" />
             <!-- Fallback -->
             <div v-else class="w-full h-full bg-muted flex items-center justify-center">
-              <span class="text-muted-foreground text-sm">No image</span>
+              <span class="text-muted-foreground text-sm">{{ t('no_image') }}</span>
             </div>
           </div>
 
