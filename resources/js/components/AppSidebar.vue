@@ -32,7 +32,7 @@ const allNavItems: (NavItem & { roles?: string[] })[] = [
         title: 'Classrooms',
         href: '/classrooms',
         icon: UniversityIcon,
-        roles: ['admin'],           // ✅ admin only
+        roles: ['admin','teacher'],           // ✅ admin only
     },
     {
         title: 'Attendances',

@@ -17,7 +17,7 @@ import {
   create as classroomsCreate,
   edit as classroomsEdit,
   destroy as classroomsDestroy,
-  show as classroomsShow 
+  show as classroomsShow
 } from '@/routes/classrooms/index'
 
 import type { BreadcrumbItem } from '@/types'
@@ -72,7 +72,7 @@ const deleteClassroom = (id: number) => {
         <h1 class="text-2xl font-bold">Classrooms</h1>
 
         <Button as-child>
-          <Link :href="classroomsCreate()">Add Classroom</Link>
+          <Link v-if="$page.props.auth.user.role === 'admin'" :href="classroomsCreate()">Add Classroom</Link>
         </Button>
       </div>
 
@@ -89,25 +89,43 @@ const deleteClassroom = (id: number) => {
           </TableHeader>
 
           <TableBody>
-            <TableRow v-for="classroom in classroomsSortedById" :key="classroom.id">
-              <TableCell>{{ classroom.id }}</TableCell>
-              <TableCell>{{ classroom.name }}</TableCell>
+            <TableRow v-for="classroom in classroomsSortedById" :key="classroom.id"
+              class="hover:bg-muted/50 transition">
+              <TableCell class="font-medium text-muted-foreground">
+                #{{ classroom.id }}
+              </TableCell>
+
+              <TableCell class="font-semibold">
+                {{ classroom.name }}
+              </TableCell>
+
               <TableCell>
-                {{ classroom.teacher?.name ?? '—' }}
+                <span class="text-muted-foreground">
+                  {{ classroom.teacher?.name ?? 'No teacher' }}
+                </span>
               </TableCell>
 
               <TableCell class="text-right">
-                <div class="flex justify-end gap-2">
-                  <Button variant="outline" size="sm" @click="router.visit(classroomsShow(classroom.id))">
+                <div class="flex justify-end items-center gap-2">
+
+                  <!-- 👁 View (Primary) -->
+                  <Button size="sm" @click="router.visit(classroomsShow(classroom.id))">
                     View
                   </Button>
-                  <Button variant="outline" size="sm" @click="editClassroom(classroom.id)">
+
+                  <!-- ✏️ Edit (only admin or owner) -->
+                  <Button
+                    v-if="$page.props.auth.user.role === 'admin'"
+                    variant="outline" size="sm" @click="editClassroom(classroom.id)">
                     Edit
                   </Button>
 
-                  <Button variant="destructive" size="sm" @click="deleteClassroom(classroom.id)">
+                  <!-- 🗑 Delete (admin only) -->
+                  <Button v-if="$page.props.auth.user.role === 'admin'" variant="destructive" size="sm"
+                    @click="deleteClassroom(classroom.id)">
                     Delete
                   </Button>
+
                 </div>
               </TableCell>
             </TableRow>

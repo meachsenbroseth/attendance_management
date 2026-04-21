@@ -118,7 +118,7 @@ const removeStudent = (studentId: number) => {
               <Link :href="index()">
                 <Button size="sm">Back</Button>
               </Link>
-              <Link :href="classroomsEdit(classroom.id)">
+              <Link v-if="$page.props.auth.user.role === 'admin'" :href="classroomsEdit(classroom.id)">
                 <Button variant="outline" size="sm">Edit Classroom</Button>
               </Link>
             </div>

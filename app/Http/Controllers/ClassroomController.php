@@ -16,44 +16,57 @@ use Inertia\Inertia;
 class ClassroomController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Determine if the user can manage (edit/add students/qr) a classroom.
+     */
+    private function canManage(Request $request, Classroom $classroom): bool
+    {
+        $user = $request->user();
+        return $user->isAdmin() || $user->id === $classroom->teacher_id;
+    }
+
+    /**
+     * List classrooms — admin sees all, teacher sees their own.
      */
     public function index(Request $request)
     {
-        abort_unless($request->user()->isAdmin(), 403);
+        $user = $request->user();
 
-        $classrooms = Classroom::with('teacher')->latest()->paginate(10);
+        abort_unless(in_array($user->role, ['admin', 'teacher']), 403);
+
+        $classrooms = Classroom::with('teacher')
+            ->when($user->role === 'teacher', fn($q) => $q->where('teacher_id', $user->id))
+            ->latest()
+            ->paginate(10);
 
         return Inertia::render('classrooms/index', [
             'classrooms' => $classrooms,
+            'canCreate'  => $user->isAdmin(),
         ]);
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Show create form — admin only.
      */
     public function create(Request $request)
     {
         abort_unless($request->user()->isAdmin(), 403);
 
-        $teachers = User::where('role', 'teacher')->get();
-
         return Inertia::render('classrooms/create', [
-            'teachers' => $teachers,
+            'teachers' => User::where('role', 'teacher')->get(['id', 'name']),
         ]);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store a new classroom — admin only.
      */
     public function store(Request $request)
     {
         abort_unless($request->user()->isAdmin(), 403);
 
         $data = $request->validate([
-            'name' => 'required|string|max:255',
+            'name'       => 'required|string|max:255',
             'teacher_id' => 'required|exists:users,id',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'image'      => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
         if ($request->hasFile('image')) {
@@ -62,140 +75,151 @@ class ClassroomController extends Controller
 
         Classroom::create($data);
 
-        return redirect()->route('classrooms.index');
+        return redirect()->route('classrooms.index')
+            ->with('success', 'Classroom created successfully.');
     }
 
     /**
-     * Display the specified resource.
+     * Show a classroom — admin or assigned teacher.
      */
     public function show(Request $request, Classroom $classroom)
     {
-        abort_unless($request->user()->isAdmin(), 403);
+        abort_unless($this->canManage($request, $classroom), 403);
 
         return Inertia::render('classrooms/show', [
             'classroom' => $classroom->load(['students', 'teacher']),
+            'canEdit'   => $request->user()->isAdmin(),
+            'canDelete' => $request->user()->isAdmin(),
         ]);
     }
 
     /**
-     * Show the form for editing the specified resource.
-     */
-    /**
-     * Show edit form
+     * Show edit form — admin only.
      */
     public function edit(Request $request, Classroom $classroom)
     {
         abort_unless($request->user()->isAdmin(), 403);
 
-        $teachers = User::where('role', 'teacher')->get();
-
         return Inertia::render('classrooms/edit', [
             'classroom' => $classroom->load('students'),
-            'teachers' => $teachers,
+            'teachers'  => User::where('role', 'teacher')->get(['id', 'name']),
         ]);
     }
 
     /**
-     * Update class
+     * Update a classroom — admin only.
      */
     public function update(Request $request, Classroom $classroom)
     {
         abort_unless($request->user()->isAdmin(), 403);
 
         $data = $request->validate([
-            'name' => 'required|string|max:255',
+            'name'       => 'required|string|max:255',
             'teacher_id' => 'required|exists:users,id',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'image'      => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
         if ($request->hasFile('image')) {
-            // Delete old image
             if ($classroom->image) {
                 Storage::disk('public')->delete($classroom->image);
             }
             $data['image'] = $request->file('image')->store('classrooms', 'public');
         }
+
         $classroom->update($data);
 
-        return redirect()->route('classrooms.index');
+        return redirect()->route('classrooms.index')
+            ->with('success', 'Classroom updated successfully.');
     }
 
     /**
-     * Delete class
+     * Delete a classroom — admin only.
      */
     public function destroy(Request $request, Classroom $classroom)
     {
         abort_unless($request->user()->isAdmin(), 403);
 
+        if ($classroom->image) {
+            Storage::disk('public')->delete($classroom->image);
+        }
+
         $classroom->delete();
 
-        return redirect()->route('classrooms.index');
+        return redirect()->route('classrooms.index')
+            ->with('success', 'Classroom deleted.');
     }
 
     /**
-     *  Add student to class
+     * Add a student to a classroom — admin or assigned teacher.
      */
     public function addStudent(Request $request, Classroom $classroom)
     {
-        abort_unless($request->user()->isAdmin(), 403);
+        abort_unless($this->canManage($request, $classroom), 403);
 
         $data = $request->validate([
-            'name' => 'required|string|max:255',
+            'name'   => 'required|string|max:255',
             'gender' => 'required|in:male,female',
         ]);
 
-        $year = now()->year;
-        $lastStudent = Student::whereYear('created_at', $year)
-            ->orderByDesc('id')
-            ->first();
-
-        $nextNumber = $lastStudent
-            ? (int) substr($lastStudent->student_code, -4) + 1
-            : 1;
-
-        $code = 'STU-' . $year . '-' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
-
         $classroom->students()->create([
-            'name' => $data['name'],
-            'gender' => $data['gender'],
-            'student_code' => $code,
+            'name'         => $data['name'],
+            'gender'       => $data['gender'],
+            'student_code' => $this->generateStudentCode(),
         ]);
 
-        return back();
+        return back()->with('success', 'Student added successfully.');
     }
 
     /**
-     *  Remove student from class
+     * Remove a student from a classroom — admin or assigned teacher.
      */
     public function removeStudent(Request $request, Student $student)
     {
-        abort_unless($request->user()->isAdmin(), 403);
+        abort_unless($this->canManage($request, $student->classroom), 403);
 
         $student->delete();
 
-        return back();
+        return back()->with('success', 'Student removed.');
     }
 
-
-
-    //generate qr
+    /**
+     * Generate and return a QR code for student self-registration.
+     * Admin or assigned teacher only.
+     */
     public function qrcode(Request $request, Classroom $classroom)
     {
-        abort_unless($request->user()->isAdmin(), 403);
+        abort_unless($this->canManage($request, $classroom), 403);
 
         $url = route('students.register.show', $classroom->id);
 
-        $renderer = new ImageRenderer(
-            new RendererStyle(300),
-            new SvgImageBackEnd()
-        );
+        $svg = (new Writer(
+            new ImageRenderer(
+                new RendererStyle(300),
+                new SvgImageBackEnd()
+            )
+        ))->writeString($url);
 
-        $writer = new Writer($renderer);
-        $svg = $writer->writeString($url);
-
-        // ✅ Return as JSON with base64 so img tag loads correctly
         return response()->json([
             'svg' => 'data:image/svg+xml;base64,' . base64_encode($svg),
         ]);
+    }
+
+    /**
+     * Generate a unique student code for the current year.
+     */
+    private function generateStudentCode(): string
+    {
+        $year = now()->year;
+
+        $lastStudent = Student::whereYear('created_at', $year)
+            ->orderByDesc('id')
+            ->lockForUpdate()
+            ->first();
+
+        $next = $lastStudent
+            ? (int) substr($lastStudent->student_code, -4) + 1
+            : 1;
+
+        return 'STU-' . $year . '-' . str_pad($next, 4, '0', STR_PAD_LEFT);
     }
 }
